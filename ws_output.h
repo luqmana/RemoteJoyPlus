@@ -20,6 +20,9 @@
 
 #include "output_exts.h"
 
+#define DEFAULT_WS_IP			"localhost"
+#define DEFAULT_WS_PORT			7681
+
 void ws_output(struct output_ext *oe);
 
 #endif // __WSOutput_H_

@@ -56,7 +56,8 @@ int main(int argc, char **argv) {
  	}
 
  	// Our list of outputs
- 	struct output_ext oe_list[2];
+ 	int num_outputs = 2;
+ 	struct output_ext oe_list[num_outputs];
 
  	// Register some output now
  	register_output_ext("SDL Output", &sdl_output, &oe_list[0]);
@@ -80,7 +81,7 @@ int main(int argc, char **argv) {
  	}
 
  	// Let the outputs setup what they need to
- 	for (int r = 0; r < 2; r++)
+ 	for (int r = 0; r < num_outputs; r++)
  		oe_list[r].setup(&oe_list[r]);
 
  	if (rj_reader_start() != 0) {
@@ -126,7 +127,7 @@ int main(int argc, char **argv) {
  					}
 
  					// Render time!
-				 	for (int r = 0; r < 2; r++)
+				 	for (int r = 0; r < num_outputs; r++)
 				 		oe_list[r].render(&oe_list[r], *g_context.sur_buffers[0]);
 
  					break;
@@ -142,7 +143,7 @@ int main(int argc, char **argv) {
  					}
 
  					// Render time!
-				 	for (int r = 0; r < 2; r++)
+				 	for (int r = 0; r < num_outputs; r++)
 				 		oe_list[r].render(&oe_list[r], *g_context.sur_buffers[1]);
 
  					break;
@@ -159,13 +160,13 @@ int main(int argc, char **argv) {
  			break;
 
  		// Let the outputs handl events if they want
-	 	for (int r = 0; r < 2; r++)
+	 	for (int r = 0; r < num_outputs; r++)
 	 		oe_list[r].handle_event(&oe_list[r], event);
 
  	}
 
  	// Let the outputs cleanup
- 	for (int r = 0; r < 2; r++)
+ 	for (int r = 0; r < num_outputs; r++)
  		oe_list[r].cleanup(&oe_list[r]);
 
  	if (g_context.sur_buffers[0]) {
