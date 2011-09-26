@@ -15,6 +15,7 @@
   * Some utils
   */
 
+#include "remotejoy_plus.h"
 #include "utils.h"
 
 #include <ctype.h>
@@ -80,5 +81,69 @@ void remove_wsp(char* buf) {
 
 	while(isspace(buf[i]))
 		buf[i--] = 0;
+
+}
+
+SDL_Surface* create_surface(void *buf, int mode) {
+	
+	unsigned int rmask, bmask, gmask, amask;
+	int currw, currh;
+	int bpp;
+
+	currw = g_context.scr_width;
+	currh = g_context.scr_height;
+
+	switch (mode) {
+		
+		case 3:
+
+			rmask = LE32(0x000000FF);
+			gmask = LE32(0x0000FF00);
+			bmask = LE32(0x00FF0000);
+			amask = 0;
+			bpp = 32;
+
+			break;
+
+		case 2:
+
+			rmask = LE16(0x000F);
+			gmask = LE16(0x00F0);
+			bmask = LE16(0x0F00);
+			amask = 0;
+			bpp = 16;
+
+			break;
+
+		case 1:
+			
+			rmask = LE16(0x1F);
+			gmask = LE16(0x1F << 5);
+			bmask = LE16(0x1F << 10);
+			amask = 0;
+			bpp = 16;
+
+			break;
+
+		case 0:
+			
+			rmask = LE16(0x1F);
+			gmask = LE16(0x3F << 5);
+			bmask = LE16(0x1F << 11);
+			amask = 0;
+			bpp = 16;
+
+			break;
+
+		default:
+
+			return NULL;
+			
+	}
+
+	return SDL_CreateRGBSurfaceFrom(buf, currw, currh, 
+									bpp, currw * (bpp / 8),
+									rmask, gmask,
+									bmask, amask);
 
 }

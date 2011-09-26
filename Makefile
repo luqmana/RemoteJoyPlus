@@ -1,5 +1,5 @@
 OUTPUT=remotejoy-plus
-OBJS=main.o output_exts.o fast_events.o sdl_output.o ws_output.o rj_reader.o utils.o
+OBJS=main.o output_exts.o fast_events.o sdl_output.o ws_output.o rj_interface.o utils.o
 
 CFLAGS=-std=c99 -O0 -Wall -g $(shell /usr/bin/sdl-config --cflags)
 

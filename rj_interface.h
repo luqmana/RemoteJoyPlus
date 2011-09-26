@@ -12,19 +12,16 @@
  */
 
  /**
-  * Reads data from the PSP via RemoteJoy/PSPLink
+  * Read/write data from/to the PSP via RemoteJoy/PSPLink
   */
 
-#ifndef __RJReader_H_
-#define __RJReader_H_
+#ifndef __RJInterface_H_
+#define __RJInterface_H_
 
 #include <SDL_thread.h>
 
 #define DEFAULT_RJ_IP				"localhost"
 #define DEFAULT_RJ_PORT				10004
-
-#define PSP_SCREEN_W 				480
-#define PSP_SCREEN_H 				272
 
 #define EVENT_ENABLE_SCREEN			1
 #define EVENT_RENDER_FRAME_1		2
@@ -63,17 +60,15 @@ struct JoyScrHeader {
 
 } __attribute__((packed));
 
-struct ScreenBuffer {
-
-	unsigned char buf[PSP_SCREEN_W * PSP_SCREEN_H * 4];
-	struct JoyScrHeader head;
-
-};
-
 extern int rj_reader_sock;
 extern SDL_Thread *rj_reader_thread;
 
-int rj_reader_init();
-void rj_reader_start();
+int rj_interface_init();
 
-#endif // __RJReader_H_
+int rj_reader_start();
+
+int rj_send_event(int type, unsigned int value);
+
+void rj_interface_cleanup();
+
+#endif // __RJInterface_H_

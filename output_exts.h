@@ -25,6 +25,7 @@ struct output_ext {
 	char *name;
 	int id;
 	void (*setup)(struct output_ext *);
+	void (*handle_event)(struct output_ext *, SDL_Event);
 	void (*render)(struct output_ext *, SDL_Surface);
 	void (*cleanup)(struct output_ext *);
 

@@ -19,7 +19,13 @@
 
 void ws_output_setup(struct output_ext *oe) {
 	
-	printf("Hi! From %s [%d]. \n", oe->name, oe->id);
+	printf("Hi! From %s [id: %d]. \n", oe->name, oe->id);
+
+}
+
+void ws_output_handle_event(struct output_ext *oe, SDL_Event event) {
+	
+
 
 }
 
@@ -38,6 +44,7 @@ void ws_output_cleanup(struct output_ext *oe) {
 void ws_output(struct output_ext *oe) {
 	
 	oe->setup = &ws_output_setup;
+	oe->handle_event = &ws_output_handle_event;
 	oe->render = &ws_output_render;
 	oe->cleanup = &ws_output_cleanup;
 
