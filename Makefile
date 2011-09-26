@@ -1,14 +1,14 @@
 OUTPUT=remotejoy-plus
-OBJS=main.o output_exts.o fast_events.o sdl_output.o ws_output.o rj_interface.o utils.o
+OBJS=main.o output_exts.o fast_events.o sdl_output.o rj_interface.o utils.o ws_output.o
 
-CFLAGS=-std=c99 -O0 -Wall -g $(shell /usr/bin/sdl-config --cflags)
+CFLAGS=-std=c99 -O0 -Wall -g $(shell /usr/bin/sdl-config --cflags) -I../WebSockets
 
 PREFIX=$(shell psp-config --pspdev-path 2> /dev/null)
 
 all: $(OUTPUT)
 
 $(OUTPUT): $(OBJS)
-	$(CC) -o $@ $^ $(shell /usr/bin/sdl-config --libs)
+	$(CC) -o $@ $^ $(shell /usr/bin/sdl-config --libs) -L../WebSockets -lwebsockets
 
 install: $(OUTPUT)
 	@echo "Installing $(OUTPUT)..."

@@ -215,6 +215,8 @@ int rj_interface_init() {
 	// Disable Nagle's algorithm
 	setsockopt(rj_sock, SOL_TCP, TCP_NODELAY, &flag, sizeof(int));
 
+	rj_send_event(TYPE_SCREEN_CMD, SCREEN_CMD_ACTIVE | g_context.psp_flags);
+
 	return 0;
 
 }

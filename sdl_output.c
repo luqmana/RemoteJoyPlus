@@ -69,6 +69,24 @@ void sdl_output_handle_event(struct output_ext *oe, SDL_Event event) {
 			if (event.type == SDL_KEYDOWN)
 				SDL_WM_ToggleFullScreen(screen);
 
+		} else if (key->keysym.sym == SDLK_F5) {
+			
+			if (event.type == SDL_KEYDOWN) {
+				
+				if (g_context.scr_on) {
+					
+					rj_send_event(TYPE_SCREEN_CMD, 0);
+					g_context.scr_on = 0;
+
+				} else {
+					
+					rj_send_event(TYPE_SCREEN_CMD, SCREEN_CMD_ACTIVE | g_context.psp_flags);
+					g_context.scr_on = 1;
+
+				}
+
+			}
+
 		}
 
 	}

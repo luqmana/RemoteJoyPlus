@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+
+ 		<meta name="charset" content="utf-8" />
+ 		
+ 		<title>RemoteJoy over WebSockets</title>
+
+	</head>
+
+	<body>
+
+		<h2>RemoteJoy</h2>
+
+		<p>
+			Export your PSP screen over http now! With WebSockets and canvas you can exhibit your PSP's display.
+			<br />
+			Based on TyRaNiD's original code extended with WebSockets support.
+		</p>
+
+		<table>
+			<div id="status">Not initialized.</div>
+		</table>
+
+		<img id="screen" src="" />
+
+		<div id="screen-canvas"></div>
+
+		<script type="text/JavaScript">
+
+			// Need to define this as firefox trunk namespaces web sockets.
+			window.WebSocket = (typeof MozWebSocket == "function") ? MozWebSocket : WebSocket;
+
+			function get_ws_url() {
+				
+				var pcol;
+				var u = document.URL;
+
+				if (u.substring(0, 5) == "https") {
+					
+					pcol = "wss://";
+					u = u.substr(8);
+
+				} else {
+					
+					pcol = "ws://";
+					if (u.substring(0, 4) == "http")
+						u = u.substring(7);
+
+				}
+
+				u = u.split('/');
+				return pcol + u[0];
+
+			}
+
+			var sock = new WebSocket(get_ws_url(), "video-frame");
+			
+			try {
+				
+				sock.onopen = function() {
+					
+					document.getElementById("status").style.backgroundColor = "#40ff40";
+					document.getElementById("status").textContent = "WebSocket Connection Opened.";
+
+				}
+
+				sock.onmessage = function got_packet(msg) {
+					
+					//document.getElementById("screen").src = "data:image/x-windows-bmp;base64," + msg.data;
+
+				}
+
+				sock.onclose = function() {
+					
+					document.getElementById("status").style.backgroundColor = "#ff4040";
+					document.getElementById("status").textContent = "WebSocket Connection Closed.";
+
+				}
+
+			} catch (e) {
+				
+				alert("Exception: " + e);
+
+			}
+
+		</script>
+
+	</body>
+
+</html>

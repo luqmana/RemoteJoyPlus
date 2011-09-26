@@ -36,6 +36,7 @@ struct GlobalContext {
 	int scr_width, scr_height;
 	int psp_flags;
 	int exit_flag;
+	int scr_on;
 
 };
 

@@ -67,6 +67,7 @@ int main(int argc, char **argv) {
  	g_context.scr_mode[0] = g_context.scr_mode[1] = 3;
  	g_context.scr_width = PSP_SCREEN_W;
  	g_context.scr_height = PSP_SCREEN_H;
+ 	g_context.scr_on = 1;
 
  	g_context.sur_buffers[0] = create_surface(g_context.scr_buffers[0].buf, g_context.scr_mode[0]);
  	g_context.sur_buffers[1] = create_surface(g_context.scr_buffers[1].buf, g_context.scr_mode[1]);
@@ -103,12 +104,14 @@ int main(int argc, char **argv) {
  				case EVENT_ENABLE_SCREEN:
 
  					rj_send_event(TYPE_SCREEN_CMD, SCREEN_CMD_ACTIVE | g_context.psp_flags);
+ 					g_context.scr_on = 1;
 
  					break;
 
  				case EVENT_DISABLE_SCREEN:
 
  					rj_send_event(TYPE_SCREEN_CMD, 0);
+ 					g_context.scr_on = 0;
 
  					break;
 
