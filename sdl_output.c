@@ -15,6 +15,7 @@
   * Outputs to the screen via SDL
   */
 
+#include "fast_events.h"
 #include "remotejoy_plus.h"
 #include "sdl_output.h"
 
@@ -41,6 +42,36 @@ void sdl_output_handle_event(struct output_ext *oe, SDL_Event event) {
 	
 	if (screen == NULL)
 		return;
+
+	if (event.type == SDL_VIDEORESIZE) {
+
+		SDL_FreeSurface(screen);
+		screen = SDL_SetVideoMode(event.resize.w, event.resize.h, 0, SDL_HWSURFACE);
+		g_context.scr_width = event.resize.w;
+		g_context.scr_height = event.resize.h;
+
+	} else if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP)) {
+		
+		SDL_KeyboardEvent *key = (SDL_KeyboardEvent *) &event;
+
+		if (key->keysym.sym == SDLK_ESCAPE) {
+			
+			SDL_Event event;
+
+			event.type = SDL_QUIT;
+			event.user.code = 0;
+			event.user.data1 = event.user.data2 = NULL;
+
+			FE_PushEvent(&event);
+
+		} else if (key->keysym.sym == SDLK_F8) {
+			
+			if (event.type == SDL_KEYDOWN)
+				SDL_WM_ToggleFullScreen(screen);
+
+		}
+
+	}
 
 }
 
