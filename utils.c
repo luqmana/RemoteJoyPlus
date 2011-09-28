@@ -2,8 +2,10 @@
  * RemoteJoy+
  * 
  * This is based on RemoteJoy by James F. (TyRaNiD).
- * It also exports the PSP screen over WebSockets
- * to be accessible to web clients.
+ *
+ * It provides an easy framework which allows building
+ * client extension which can connect to the PSP receiving
+ * the output and forwarding input even simultaneously.
  *
  * Licensed under the BSD license.
  * 
@@ -12,7 +14,7 @@
  */
 
  /**
-  * Some utils
+  * Some utils.
   */
 
 #include "remotejoy_plus.h"

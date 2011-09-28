@@ -2,8 +2,10 @@
  * RemoteJoy+
  * 
  * This is based on RemoteJoy by James F. (TyRaNiD).
- * It also exports the PSP screen over WebSockets
- * to be accessible to web clients.
+ *
+ * It provides an easy framework which allows building
+ * client extension which can connect to the PSP receiving
+ * the output and forwarding input even simultaneously.
  *
  * Licensed under the BSD license.
  * 
@@ -12,33 +14,40 @@
  */
 
  /**
-  * Outputs to the screen via SDL
+  * Outputs to the screen via SDL.
   */
 
 #include "fast_events.h"
 #include "remotejoy_plus.h"
-#include "sdl_output.h"
+#include "sdl_client.h"
 
 SDL_Surface* screen = NULL;
 
-void sdl_output_setup(struct output_ext *oe) {
+void sdl_client_setup(struct client_ext *ce) {
 	
-	printf("Hi! From %s [id: %d]. \n", oe->name, oe->id);
+	printf("Hi! From %s [id: %d]. \n", ce->name, ce->id);
+
+	if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) {
+		
+		fprintf(stderr, "SDL Client: Unable to initiate video sub system [%s].\n", SDL_GetError());
+		return;
+
+	}
 
 	screen = SDL_SetVideoMode(g_context.scr_width, g_context.scr_height, 0, SDL_HWSURFACE);
 
 	if (screen == NULL) {
 
-		fprintf(stderr, "SDL Output: Unable to create screen surface [%s].\n", SDL_GetError());
+		fprintf(stderr, "SDL Client: Unable to create screen surface [%s].\n", SDL_GetError());
 		return;
 
 	}
 
-	SDL_ShowCursor(SDL_DISABLE);
+	//SDL_ShowCursor(SDL_DISABLE);
 
 }
 
-void sdl_output_handle_event(struct output_ext *oe, SDL_Event event) {
+void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {
 	
 	if (screen == NULL)
 		return;
@@ -73,15 +82,20 @@ void sdl_output_handle_event(struct output_ext *oe, SDL_Event event) {
 			
 			if (event.type == SDL_KEYDOWN) {
 				
+				SDL_Event kevent;
+				kevent.type = SDL_USEREVENT;
+				kevent.user.data1 = NULL;
+				kevent.user.data2 = NULL;
+
 				if (g_context.scr_on) {
-					
-					rj_send_event(TYPE_SCREEN_CMD, 0);
-					g_context.scr_on = 0;
+
+					kevent.user.code = EVENT_DISABLE_SCREEN;
+					FE_PushEvent(&kevent);
 
 				} else {
 					
-					rj_send_event(TYPE_SCREEN_CMD, SCREEN_CMD_ACTIVE | g_context.psp_flags);
-					g_context.scr_on = 1;
+					kevent.user.code = EVENT_ENABLE_SCREEN;
+					FE_PushEvent(&kevent);
 
 				}
 
@@ -93,7 +107,7 @@ void sdl_output_handle_event(struct output_ext *oe, SDL_Event event) {
 
 }
 
-void sdl_output_render(struct output_ext *oe, SDL_Surface surf) {
+void sdl_client_render(struct client_ext *ce, SDL_Surface surf) {
 	
 	if (screen == NULL)
 		return;
@@ -105,17 +119,24 @@ void sdl_output_render(struct output_ext *oe, SDL_Surface surf) {
 
 }
 
-void sdl_output_cleanup(struct output_ext *oe) {
+void sdl_client_cleanup(struct client_ext *ce) {
 	
+	if (screen != NULL) {
+		
+		SDL_FreeSurface(screen);
 
+	}
+
+	if (SDL_WasInit(SDL_INIT_VIDEO) != 0)
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
 }
 
-void sdl_output(struct output_ext *oe) {
+void sdl_client(struct client_ext *ce) {
 	
-	oe->setup = &sdl_output_setup;
-	oe->handle_event = &sdl_output_handle_event;
-	oe->render = &sdl_output_render;
-	oe->cleanup = &sdl_output_cleanup;
+	ce->setup = &sdl_client_setup;
+	ce->handle_event = &sdl_client_handle_event;
+	ce->render = &sdl_client_render;
+	ce->cleanup = &sdl_client_cleanup;
 
 }

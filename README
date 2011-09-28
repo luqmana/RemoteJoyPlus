@@ -1,8 +1,16 @@
 RemoteJoy+
   
  This is based on RemoteJoy by James F. (TyRaNiD).
- It also exports the PSP screen over WebSockets
- to be accessible to web clients.
+
+ It provides an easy framework which allows building
+ client extension which can connect to the PSP receiving
+ the output and forwarding input even simultaneously.
+
+ Currently there exists a local SDL client which outputs to the
+ screen. It doesn't accept input as of yet.
+ There is also a WebSockets client which will eventually be
+ able to broadcast the screen to WebSocket capable browsers
+ [in due time].
  
 Licensed under the BSD license.
   

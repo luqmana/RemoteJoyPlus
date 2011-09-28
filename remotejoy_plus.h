@@ -2,13 +2,19 @@
  * RemoteJoy+
  * 
  * This is based on RemoteJoy by James F. (TyRaNiD).
- * It also exports the PSP screen over WebSockets
- * to be accessible to web clients.
+ *
+ * It provides an easy framework which allows building
+ * client extension which can connect to the PSP receiving
+ * the output and forwarding input even simultaneously.
  *
  * Licensed under the BSD license.
  * 
  * Copyright (c) 2006 James F. <tyranid@gmail.com>
  * Copyright (c) 2011 Luqman A. <laden@csclub.uwaterloo.ca>
+ */
+
+/**
+ * Some common stuff used in the program.
  */
 
 #ifndef __RemoteJoyPlus_H_
@@ -40,6 +46,10 @@ struct GlobalContext {
 
 };
 
+/**
+ * Yes! A global struct holding ALL THE INFO!
+ * Let's hope we have no race conditions...
+ */
 extern struct GlobalContext g_context;
 
 #endif

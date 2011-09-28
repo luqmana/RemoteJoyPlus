@@ -2,8 +2,10 @@
  * RemoteJoy+
  * 
  * This is based on RemoteJoy by James F. (TyRaNiD).
- * It also exports the PSP screen over WebSockets
- * to be accessible to web clients.
+ *
+ * It provides an easy framework which allows building
+ * client extension which can connect to the PSP receiving
+ * the output and forwarding input even simultaneously.
  *
  * Licensed under the BSD license.
  * 
@@ -20,13 +22,18 @@
 #include <stdio.h>
 
 #include "fast_events.h"
-#include "output_exts.h"
+#include "client_exts.h"
 #include "remotejoy_plus.h"
 #include "rj_interface.h"
-#include "sdl_output.h"
 #include "utils.h"
-#include "ws_output.h"
 
+#include "sdl_client.h"
+#include "ws_client.h"
+
+/**
+ * Yes! A global struct holding ALL THE INFO!
+ * Let's hope we have no race conditions...
+ */
 struct GlobalContext g_context;
 
 int main(int argc, char **argv) {
@@ -34,7 +41,7 @@ int main(int argc, char **argv) {
 	printf("RemoteJoy+ for PSP (c) 2011 Luqman A.\n");
  	printf("Built: %s %s\n", __DATE__, __TIME__);
 
- 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTTHREAD) != 0) {
+ 	if (SDL_Init(SDL_INIT_EVENTTHREAD) != 0) {
  		
  		fprintf(stderr, "Could not initialise SDL [%s].\n", SDL_GetError());
  		return 1;
@@ -56,12 +63,12 @@ int main(int argc, char **argv) {
  	}
 
  	// Our list of outputs
- 	int num_outputs = 2;
- 	struct output_ext oe_list[num_outputs];
+ 	int num_client_exts = 2;
+ 	struct client_ext ce_list[num_client_exts];
 
  	// Register some output now
- 	register_output_ext("SDL Output", &sdl_output, &oe_list[0]);
- 	register_output_ext("WebSocket Output", &ws_output, &oe_list[1]);
+ 	register_client_ext("SDL Client", &sdl_client, &ce_list[0]);
+ 	register_client_ext("WebSockets Client", &ws_client, &ce_list[1]);
 
  	g_context.psp_flags = SCREEN_CMD_FULLCOLOR;
  	g_context.exit_flag = 0;
@@ -80,9 +87,9 @@ int main(int argc, char **argv) {
 
  	}
 
- 	// Let the outputs setup what they need to
- 	for (int r = 0; r < num_outputs; r++)
- 		oe_list[r].setup(&oe_list[r]);
+ 	// Let the clients setup what they need to
+ 	for (int r = 0; r < num_client_exts; r++)
+ 		ce_list[r].setup(&ce_list[r]);
 
  	if (rj_reader_start() != 0) {
  		
@@ -91,10 +98,14 @@ int main(int argc, char **argv) {
 
  	}
 
+ 	// Begin main loop
  	while (!g_context.exit_flag) {
  		
  		SDL_Event event;
 
+ 		// This call just blocks until we've received some event
+ 		// It'll break outta the loop and thus exit the program
+ 		// if it errors out for some reason
  		if (!FE_WaitEvent(&event))
  			break;
 
@@ -127,8 +138,8 @@ int main(int argc, char **argv) {
  					}
 
  					// Render time!
-				 	for (int r = 0; r < num_outputs; r++)
-				 		oe_list[r].render(&oe_list[r], *g_context.sur_buffers[0]);
+ 					for (int r = 0; r < num_client_exts; r++)
+ 						ce_list[r].render(&ce_list[r], *g_context.sur_buffers[0]);
 
  					break;
 
@@ -143,8 +154,8 @@ int main(int argc, char **argv) {
  					}
 
  					// Render time!
-				 	for (int r = 0; r < num_outputs; r++)
-				 		oe_list[r].render(&oe_list[r], *g_context.sur_buffers[1]);
+ 					for (int r = 0; r < num_client_exts; r++)
+ 						ce_list[r].render(&ce_list[r], *g_context.sur_buffers[1]);
 
  					break;
 
@@ -159,15 +170,15 @@ int main(int argc, char **argv) {
  		if (event.type == SDL_QUIT)
  			break;
 
- 		// Let the outputs handl events if they want
-	 	for (int r = 0; r < num_outputs; r++)
-	 		oe_list[r].handle_event(&oe_list[r], event);
+ 		// Let the clients handle events if they want
+	 	for (int r = 0; r < num_client_exts; r++)
+	 		ce_list[r].handle_event(&ce_list[r], event);
 
  	}
 
- 	// Let the outputs cleanup
- 	for (int r = 0; r < num_outputs; r++)
- 		oe_list[r].cleanup(&oe_list[r]);
+ 	// Let the clients cleanup
+ 	for (int r = 0; r < num_client_exts; r++)
+ 		ce_list[r].cleanup(&ce_list[r]);
 
  	if (g_context.sur_buffers[0]) {
  		
