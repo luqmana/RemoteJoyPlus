@@ -36,13 +36,12 @@ struct ScreenBuffer {
 
 struct GlobalContext {
 	
-	SDL_Surface* sur_buffers[2];
 	struct ScreenBuffer scr_buffers[2];
-	int scr_mode[2];
 	int scr_width, scr_height;
 	int psp_flags;
 	int exit_flag;
 	int scr_on;
+	unsigned int button_state;
 
 };
 

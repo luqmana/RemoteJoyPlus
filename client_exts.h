@@ -20,7 +20,7 @@
 #ifndef __ClientExts_H_
 #define __ClientExts_H_
 
-#include <SDL.h>
+#include "remotejoy_plus.h"
 
 struct client_ext {
 	
@@ -28,7 +28,7 @@ struct client_ext {
 	int id;
 	void (*setup)(struct client_ext *);
 	void (*handle_event)(struct client_ext *, SDL_Event);
-	void (*render)(struct client_ext *, SDL_Surface);
+	void (*render)(struct client_ext *, struct ScreenBuffer *);
 	void (*cleanup)(struct client_ext *);
 
 };

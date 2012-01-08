@@ -23,10 +23,17 @@
 #include <SDL_thread.h>
 #include <unistd.h>
 
-int ws_http_callback(struct libwebsocket_context* context,
-				  	 struct libwebsocket* wsi,
-				  	 enum libwebsocket_callback_reasons reason,
-				  	 void* user, void* in, size_t len);
+int ws_http_callback(
+	struct libwebsocket_context *,
+	struct libwebsocket *,
+	enum libwebsocket_callback_reasons,
+	void *, void *, size_t);
+
+int ws_videoframe_callback(
+	struct libwebsocket_context *,
+	struct libwebsocket *,
+	enum libwebsocket_callback_reasons,
+	void *, void *, size_t);
 
 enum protocols {
 	
@@ -42,6 +49,11 @@ static struct libwebsocket_protocols ws_protocols[] = {
 		ws_http_callback,		// Callback func
 		0						// Per session data size
 	},
+	{
+		"video-frame",			// Name
+		ws_videoframe_callback,	// Callback func
+		0						// Per session data size
+	},
 	{ NULL, NULL, 0 }
 
 };
@@ -53,10 +65,6 @@ int ws_service_handler(void* p) {
 	
 	while (1) {
 		
-		usleep(100);
-
-		//libwebsockets_broadcast(&protocols[PROTOCOL_VIDEOFRAME], &buf[LWS_SEND_BUFFER_PRE_PADDING], 1);
-
 		libwebsocket_service(ws_context, 50);
 
 	}
@@ -65,10 +73,11 @@ int ws_service_handler(void* p) {
 
 }
 
-int ws_http_callback(struct libwebsocket_context* context,
-				  	 struct libwebsocket* wsi,
-				  	 enum libwebsocket_callback_reasons reason,
-				  	 void* user, void* in, size_t len) {
+int ws_http_callback(
+	struct libwebsocket_context *context,
+	struct libwebsocket *wsi,
+	enum libwebsocket_callback_reasons reason,
+	void *user, void *in, size_t len) {
 
 	char client_name[128];
 	char client_ip[128];
@@ -115,11 +124,58 @@ int ws_http_callback(struct libwebsocket_context* context,
 
 }
 
+int ws_videoframe_callback(
+	struct libwebsocket_context *context,
+	struct libwebsocket *wsi,
+	enum libwebsocket_callback_reasons reason,
+	void *user, void *in, size_t len) {
+
+	switch (reason) {
+		
+		case LWS_CALLBACK_ESTABLISHED:
+
+			printf("videoframe_callback: LWS_CALLBACK_ESTABLISHED\n");
+
+			break;
+
+		case LWS_CALLBACK_BROADCAST:
+
+			printf("len is [%d]\n", (int)len);
+
+			//int n = libwebsocket_write(wsi, p)
+
+			break;
+
+		case LWS_CALLBACK_RECEIVE:
+
+			break;
+
+		case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
+
+			// return non-zero here to kill connection
+
+			break;
+
+		default:
+			break;
+
+	}
+
+	return 0;
+
+}
+
 void ws_client_setup(struct client_ext *ce) {
 	
 	printf("Hi! From %s [id: %d]. \n", ce->name, ce->id);
 
-	ws_context = libwebsocket_create_context(DEFAULT_WS_PORT, DEFAULT_WS_IP, ws_protocols, libwebsocket_internal_extensions, NULL, NULL, -1, -1, 0);
+	int opts = 0;
+
+	ws_context = libwebsocket_create_context(
+					DEFAULT_WS_PORT, DEFAULT_WS_IP,
+					ws_protocols,
+					libwebsocket_internal_extensions,
+					NULL, NULL, -1, -1, opts);
 
 	if (ws_context == NULL) {
 		
@@ -145,6 +201,15 @@ void ws_client_setup(struct client_ext *ce) {
 
 }
 
+void ws_client_cleanup(struct client_ext *ce) {
+	
+	if (ws_context == NULL)
+		return;
+
+	libwebsocket_context_destroy(ws_context);
+
+}
+
 void ws_client_handle_event(struct client_ext *ce, SDL_Event event) {
 	
 	if (ws_context == NULL)
@@ -152,22 +217,12 @@ void ws_client_handle_event(struct client_ext *ce, SDL_Event event) {
 
 }
 
-void ws_client_render(struct client_ext *ce, SDL_Surface surf) {
+void ws_client_render(struct client_ext *ce, struct ScreenBuffer *sbuf) {
 	
 	if (ws_context == NULL)
 		return;
 
-}
-
-void ws_client_cleanup(struct client_ext *ce) {
-	
-	if (ws_context == NULL)
-		return;
-
-	if (ws_service_thread)
-		SDL_KillThread(ws_service_thread);
-
-	libwebsocket_context_destroy(ws_context);
+	libwebsockets_broadcast(&ws_protocols[PROTOCOL_VIDEOFRAME], NULL, sbuf->head.mode);
 
 }
 

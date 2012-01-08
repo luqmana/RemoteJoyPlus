@@ -72,20 +72,10 @@ int main(int argc, char **argv) {
 
  	g_context.psp_flags = SCREEN_CMD_FULLCOLOR;
  	g_context.exit_flag = 0;
- 	g_context.scr_mode[0] = g_context.scr_mode[1] = 3;
  	g_context.scr_width = PSP_SCREEN_W;
  	g_context.scr_height = PSP_SCREEN_H;
  	g_context.scr_on = 1;
-
- 	g_context.sur_buffers[0] = create_surface(g_context.scr_buffers[0].buf, g_context.scr_mode[0]);
- 	g_context.sur_buffers[1] = create_surface(g_context.scr_buffers[1].buf, g_context.scr_mode[1]);
-
- 	if (g_context.sur_buffers[0] == NULL || g_context.sur_buffers[1] == NULL) {
- 		
- 		fprintf(stderr, "Unable to create surface buffers [%s].\n", SDL_GetError());
- 		return 1;
-
- 	}
+ 	g_context.button_state = 0;
 
  	// Let the clients setup what they need to
  	for (int r = 0; r < num_client_exts; r++)
@@ -97,6 +87,8 @@ int main(int argc, char **argv) {
  		return 1;
 
  	}
+
+ 	rj_send_event(TYPE_SCREEN_CMD, SCREEN_CMD_ACTIVE | g_context.psp_flags);
 
  	// Begin main loop
  	while (!g_context.exit_flag) {
@@ -129,33 +121,23 @@ int main(int argc, char **argv) {
 
  				case EVENT_RENDER_FRAME_1:
 
- 					if (g_context.scr_buffers[0].head.mode != g_context.scr_mode[0]) {
- 						
- 						SDL_FreeSurface(g_context.sur_buffers[0]);
- 						g_context.sur_buffers[0] = create_surface(g_context.scr_buffers[0].buf, g_context.scr_buffers[0].head.mode);
- 						g_context.scr_mode[0] = g_context.scr_buffers[0].head.mode;
-
- 					}
+ 					if (!g_context.scr_on)
+ 						break;
 
  					// Render time!
  					for (int r = 0; r < num_client_exts; r++)
- 						ce_list[r].render(&ce_list[r], *g_context.sur_buffers[0]);
+ 						ce_list[r].render(&ce_list[r], &g_context.scr_buffers[0]);
 
  					break;
 
  				case EVENT_RENDER_FRAME_2:
 
- 					if (g_context.scr_buffers[1].head.mode != g_context.scr_mode[1]) {
- 						
- 						SDL_FreeSurface(g_context.sur_buffers[1]);
- 						g_context.sur_buffers[1] = create_surface(g_context.scr_buffers[1].buf, g_context.scr_buffers[1].head.mode);
- 						g_context.scr_mode[1] = g_context.scr_buffers[1].head.mode;
-
- 					}
+ 					if (!g_context.scr_on)
+ 						break;
 
  					// Render time!
  					for (int r = 0; r < num_client_exts; r++)
- 						ce_list[r].render(&ce_list[r], *g_context.sur_buffers[1]);
+ 						ce_list[r].render(&ce_list[r], &g_context.scr_buffers[1]);
 
  					break;
 
@@ -179,20 +161,6 @@ int main(int argc, char **argv) {
  	// Let the clients cleanup
  	for (int r = 0; r < num_client_exts; r++)
  		ce_list[r].cleanup(&ce_list[r]);
-
- 	if (g_context.sur_buffers[0]) {
- 		
- 		SDL_FreeSurface(g_context.sur_buffers[0]);
- 		g_context.sur_buffers[0] = NULL;
-
- 	}
-
- 	if (g_context.sur_buffers[1]) {
- 		
- 		SDL_FreeSurface(g_context.sur_buffers[1]);
- 		g_context.sur_buffers[1] = NULL;
-
- 	}
 
  	rj_interface_cleanup();
 

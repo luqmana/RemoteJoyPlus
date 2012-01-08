@@ -63,6 +63,64 @@ struct JoyScrHeader {
 
 } __attribute__((packed));
 
+enum PspCtrlButtons {
+	/** Select button. */
+	PSP_CTRL_SELECT     = 0x000001,
+	/** Start button. */
+	PSP_CTRL_START      = 0x000008,
+	/** Up D-Pad button. */
+	PSP_CTRL_UP         = 0x000010,
+	/** Right D-Pad button. */
+	PSP_CTRL_RIGHT      = 0x000020,
+	/** Down D-Pad button. */
+	PSP_CTRL_DOWN      	= 0x000040,
+	/** Left D-Pad button. */
+	PSP_CTRL_LEFT      	= 0x000080,
+	/** Left trigger. */
+	PSP_CTRL_LTRIGGER   = 0x000100,
+	/** Right trigger. */
+	PSP_CTRL_RTRIGGER   = 0x000200,
+	/** Triangle button. */
+	PSP_CTRL_TRIANGLE   = 0x001000,
+	/** Circle button. */
+	PSP_CTRL_CIRCLE     = 0x002000,
+	/** Cross button. */
+	PSP_CTRL_CROSS      = 0x004000,
+	/** Square button. */
+	PSP_CTRL_SQUARE     = 0x008000,
+	/** Home button. */
+	PSP_CTRL_HOME       = 0x010000,
+	/** Music Note button. */
+	PSP_CTRL_NOTE       = 0x800000,
+	/** Screen button. */
+	PSP_CTRL_SCREEN     = 0x400000,
+	/** Volume up button. */
+	PSP_CTRL_VOLUP      = 0x100000,
+	/** Volume down button. */
+	PSP_CTRL_VOLDOWN    = 0x200000
+};
+
+enum PspButtons {
+	PSP_BUTTON_CROSS = 0,
+	PSP_BUTTON_CIRCLE = 1,
+	PSP_BUTTON_TRIANGLE = 2,
+	PSP_BUTTON_SQUARE = 3,
+	PSP_BUTTON_LTRIGGER = 4,
+	PSP_BUTTON_RTRIGGER = 5,
+	PSP_BUTTON_START = 6,
+	PSP_BUTTON_SELECT = 7,
+	PSP_BUTTON_UP = 8,
+	PSP_BUTTON_DOWN = 9,
+	PSP_BUTTON_LEFT = 10,
+	PSP_BUTTON_RIGHT = 11,
+	PSP_BUTTON_HOME  = 12,
+	PSP_BUTTON_NOTE  = 13,
+	PSP_BUTTON_SCREEN = 14,
+	PSP_BUTTON_VOLUP  = 15,
+	PSP_BUTTON_VOLDOWN = 16,
+	PSP_BUTTON_MAX   = 17
+};
+
 extern int rj_reader_sock;
 extern SDL_Thread *rj_reader_thread;
 
