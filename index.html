@@ -23,9 +23,8 @@
 			<div id="status">Not initialized.</div>
 		</table>
 
-		<img id="screen" src="" />
-
-		<div id="screen-canvas"></div>
+		<canvas id="screen-canvas" width="480" height="272"></canvas>
+		<img id="screen" width="480" height="272" />
 
 		<script type="text/JavaScript">
 
@@ -67,8 +66,38 @@
 				}
 
 				sock.onmessage = function got_packet(msg) {
-					
-					//document.getElementById("screen").src = "data:image/x-windows-bmp;base64," + msg.data;
+
+					var img;
+					if (typeof msg.data.mozSlice == 'function') {
+
+						img = msg.data.mozSlice(0, msg.data.size, "image/bmp");
+
+					} else {
+						
+						img = msg.data.webkitSlice(0, msg.data.size, "image/bmp");
+
+					}
+
+					window.i = img;
+
+					//var canvas = document.getElementById('screen-canvas');  
+					//var ctx = canvas.getContext('2d');
+
+					var reader = new FileReader();
+					reader.onload = function() {
+						
+						//var image = new Image();
+						var image = document.getElementById("screen");
+						/*image.onload = function() {
+							
+							ctx.drawImage(image, 0, 0);
+
+						};*/
+
+						image.src = "data:image/x-windows-bmp;base64," + window.btoa(reader.result);
+
+					};
+					reader.readAsBinaryString(img);
 
 				}
 

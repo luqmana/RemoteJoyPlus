@@ -23,7 +23,7 @@
 #include "client_exts.h"
 
 #define DEFAULT_WS_IP			"localhost"
-#define DEFAULT_WS_PORT			7681
+#define DEFAULT_WS_PORT			7000
 
 void ws_client(struct client_ext *ce);
 

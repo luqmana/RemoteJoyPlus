@@ -22,6 +22,7 @@
 #include <libwebsockets.h>
 #include <SDL_thread.h>
 #include <unistd.h>
+#include "utils.h"
 
 int ws_http_callback(
 	struct libwebsocket_context *,
@@ -41,6 +42,8 @@ enum protocols {
 	PROTOCOL_VIDEOFRAME
 
 };
+
+int sender = 0;
 
 static struct libwebsocket_protocols ws_protocols[] = {
 	
@@ -138,13 +141,18 @@ int ws_videoframe_callback(
 
 			break;
 
-		case LWS_CALLBACK_BROADCAST:
+		case LWS_CALLBACK_BROADCAST:{
 
-			printf("len is [%d]\n", (int)len);
+			int n = libwebsocket_write(wsi, (unsigned char *)in, len, LWS_WRITE_BINARY);
 
-			//int n = libwebsocket_write(wsi, p)
+			if (n < 0) {
+				
+				fprintf(stderr, "Error writing video frame.\n");
+				return 1;
 
-			break;
+			}
+
+			}break;
 
 		case LWS_CALLBACK_RECEIVE:
 
@@ -208,6 +216,8 @@ void ws_client_cleanup(struct client_ext *ce) {
 
 	libwebsocket_context_destroy(ws_context);
 
+	ws_context = NULL;
+
 }
 
 void ws_client_handle_event(struct client_ext *ce, SDL_Event event) {
@@ -222,7 +232,36 @@ void ws_client_render(struct client_ext *ce, struct ScreenBuffer *sbuf) {
 	if (ws_context == NULL)
 		return;
 
-	libwebsockets_broadcast(&ws_protocols[PROTOCOL_VIDEOFRAME], NULL, sbuf->head.mode);
+	if (sender == 7)
+		sender = 0;
+
+	if (sender != 0) {
+		
+		sender++;
+		return;
+
+	}
+
+	sender++;
+
+	// convert to a surface to handle variable modes
+	SDL_Surface *s = create_surface(sbuf->buf, sbuf->head.mode);
+
+	SDL_RWops *rw;
+	char b[PSP_SCREEN_W * PSP_SCREEN_H * 4];
+	rw = SDL_RWFromMem(b, sizeof(b));
+	SDL_SaveBMP_RW(s, rw, 0);
+
+	// now to get the size of the bmp
+	int sz;
+	memcpy(&sz, b + 2, 4);
+
+	unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + sz + LWS_SEND_BUFFER_POST_PADDING];
+	memcpy(&buf[LWS_SEND_BUFFER_PRE_PADDING], b, sz);
+
+	libwebsockets_broadcast(&ws_protocols[PROTOCOL_VIDEOFRAME], &buf[LWS_SEND_BUFFER_PRE_PADDING], sz);
+
+	SDL_FreeSurface(s);
 
 }
 

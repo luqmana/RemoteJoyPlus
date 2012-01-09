@@ -174,8 +174,6 @@ void sdl_client_render(struct client_ext *ce, struct ScreenBuffer *sbuf) {
 	if (screen == NULL)
 		return;
 
-	printf("mode be %d yo\n", sbuf->head.mode);
-
 	SDL_Surface *surf = create_surface(sbuf->buf, sbuf->head.mode);
 
 	SDL_BlitSurface(surf, NULL, screen, NULL);
