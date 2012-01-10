@@ -149,14 +149,55 @@ void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {
 			case SDLK_LEFT:
 				keymap = PSP_CTRL_LEFT;
 				break;
-			case SDLK_RIGHT:
-				keymap = PSP_CTRL_RIGHT;
-				break;
 			case SDLK_UP:
 				keymap = PSP_CTRL_UP;
 				break;
+			case SDLK_RIGHT:
+				keymap = PSP_CTRL_RIGHT;
+				break;
 			case SDLK_DOWN:
 				keymap = PSP_CTRL_DOWN;
+				break;
+			case SDLK_z:
+				keymap = PSP_CTRL_CROSS;
+				break;
+			case SDLK_x:
+				keymap = PSP_CTRL_CIRCLE;
+				break;
+			case SDLK_a:
+				keymap = PSP_CTRL_SQUARE;
+				break;
+			case SDLK_s:
+				keymap = PSP_CTRL_TRIANGLE;
+				break;
+			case SDLK_q:
+				keymap = PSP_CTRL_LTRIGGER;
+				break;
+			case SDLK_w:
+				keymap = PSP_CTRL_RTRIGGER;
+				break;
+			case SDLK_RETURN:
+				keymap = PSP_CTRL_START;
+				break;
+			case SDLK_SPACE:
+				keymap = PSP_CTRL_SELECT;
+				break;
+			case SDLK_m:
+				keymap = PSP_CTRL_SCREEN;
+				break;
+			case SDLK_n:
+				keymap = PSP_CTRL_NOTE;
+				break;
+			case SDLK_EQUALS:
+			case SDLK_PLUS:
+				keymap = PSP_CTRL_VOLUP;
+				break;
+			case SDLK_MINUS:
+			case SDLK_UNDERSCORE:
+				keymap = PSP_CTRL_VOLDOWN;
+				break;
+			case SDLK_BACKSPACE:
+				keymap = PSP_CTRL_HOME;
 				break;
 			default:
 				break;
@@ -167,7 +208,7 @@ void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {
 			forward_button_input(TYPE_BUTTON_DOWN, keymap);
 		else if (event.type == SDL_KEYUP)
 			forward_button_input(TYPE_BUTTON_UP, keymap);
-			
+
 	}
 
 }

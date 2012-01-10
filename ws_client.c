@@ -144,6 +144,32 @@ void ws_do_input(char *rec) {
 		keymap = PSP_CTRL_RIGHT;
 	else if (strcmp(k, "DOWN") == 0)
 		keymap = PSP_CTRL_DOWN;
+	else if (strcmp(k, "CROSS") == 0)
+		keymap = PSP_CTRL_CROSS;
+	else if (strcmp(k, "CIRCLE") == 0)
+		keymap = PSP_CTRL_CIRCLE;
+	else if (strcmp(k, "SQUARE") == 0)
+		keymap = PSP_CTRL_SQUARE;
+	else if (strcmp(k, "TRIANGLE") == 0)
+		keymap = PSP_CTRL_TRIANGLE;
+	else if (strcmp(k, "LTRIGGER") == 0)
+		keymap = PSP_CTRL_LTRIGGER;
+	else if (strcmp(k, "RTRIGGER") == 0)
+		keymap = PSP_CTRL_RTRIGGER;
+	else if (strcmp(k, "START") == 0)
+		keymap = PSP_CTRL_START;
+	else if (strcmp(k, "SELECT") == 0)
+		keymap = PSP_CTRL_SELECT;
+	else if (strcmp(k, "SCREEN") == 0)
+		keymap = PSP_CTRL_SCREEN;
+	else if (strcmp(k, "NOTE") == 0)
+		keymap = PSP_CTRL_NOTE;
+	else if (strcmp(k, "VOLUP") == 0)
+		keymap = PSP_CTRL_VOLUP;
+	else if (strcmp(k, "VOLDOWN") == 0)
+		keymap = PSP_CTRL_VOLDOWN;
+	else if (strcmp(k, "HOME") == 0)
+		keymap = PSP_CTRL_HOME;
 	else
 		return;
 

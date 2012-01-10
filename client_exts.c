@@ -32,7 +32,6 @@ void register_client_ext(char* name, void (*ce_register_func)(struct client_ext 
 }
 
 void forward_button_input(int type, unsigned int keymap) {
-	printf("TYPE_BUTTON_%s\n", (type == TYPE_BUTTON_DOWN) ? "DOWN" : "UP");
 	
 	if (type == TYPE_BUTTON_DOWN)
 		g_context.button_state |= keymap;

@@ -63,39 +63,52 @@
 					document.getElementById("status").style.backgroundColor = "#40ff40";
 					document.getElementById("status").textContent = "WebSocket Connection Opened.";
 
-					sock.send("HI I LOVE YOU!");
-
-					document.onkeydown = function(evt) {
+					function keyHandler(evt) {
 						evt = evt || window.event;
 
 						var e = evt.keyCode;
+						var t = (evt.type == "keydown") ? 'd' : 'u';
 
-						if (e == 37)
-							sock.send('dLEFT');
-						else if (e == 38)
-							sock.send('dUP');
-						else if (e == 39)	
-							sock.send('dRIGHT');
-						else if (e == 40)	
-							sock.send('dDOWN');
+						if (e == 37)				// LEFT
+							sock.send(t + 'LEFT');
+						else if (e == 38)			// UP
+							sock.send(t + 'UP');
+						else if (e == 39)			// RIGHT
+							sock.send(t + 'RIGHT');
+						else if (e == 40)			// DOWN
+							sock.send(t + 'DOWN');
+						else if (e == 90)			// Z
+							sock.send(t + 'CROSS');
+						else if (e == 88)			// X
+							sock.send(t + 'CIRCLE');
+						else if (e == 65)			// A
+							sock.send(t + 'SQUARE');
+						else if (e == 83)			// S
+							sock.send(t + 'TRIANGLE');
+						else if (e == 81)			// Q
+							sock.send(t + 'LTRIGGER');
+						else if (e == 87)			// W
+							sock.send(t + 'RTRIGGER');
+						else if (e == 13)			// ENTER
+							sock.send(t + 'START');
+						else if (e == 32)			// SPACE
+							sock.send(t + 'SELECT');
+						else if (e == 77)			// M
+							sock.send(t + 'SCREEN');
+						else if (e == 78)			// N
+							sock.send(t + 'NOTE');
+						else if (e == 61)			// =
+							sock.send(t + 'VOLUP');
+						else if (e == 109)			// -
+							sock.send(t + 'VOLDOWN');
+						else if (e == 8)			// BACKSPACE
+							sock.send(t + 'HOME');
+						
 
 					}
 
-					document.onkeyup = function(evt) {
-						evt = evt || window.event;
-
-						var e = evt.keyCode;
-
-						if (e == 37)
-							sock.send('uLEFT');
-						else if (e == 38)
-							sock.send('uUP');
-						else if (e == 39)	
-							sock.send('uRIGHT');
-						else if (e == 40)	
-							sock.send('uDOWN');
-
-					}
+					document.onkeydown = keyHandler;
+					document.onkeyup = keyHandler;
 
 				}
 
