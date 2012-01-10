@@ -35,4 +35,6 @@ struct client_ext {
 
 void register_client_ext(char* name, void (*ce_register_func)(struct client_ext *), struct client_ext *ce);
 
+void forward_button_input(int type, unsigned int keymap);
+
 #endif // __ClientExts_H_

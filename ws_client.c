@@ -129,6 +129,31 @@ int ws_http_callback(
 
 }
 
+void ws_do_input(char *rec) {
+
+	char t = rec[0];
+	char *k = &rec[1];
+
+	unsigned int keymap = 0;
+
+	if (strcmp(k, "LEFT") == 0)
+		keymap = PSP_CTRL_LEFT;
+	else if (strcmp(k, "UP") == 0)
+		keymap = PSP_CTRL_UP;
+	else if (strcmp(k, "RIGHT") == 0)
+		keymap = PSP_CTRL_RIGHT;
+	else if (strcmp(k, "DOWN") == 0)
+		keymap = PSP_CTRL_DOWN;
+	else
+		return;
+
+	if (t == 'd')
+		forward_button_input(TYPE_BUTTON_DOWN, keymap);
+	else if (t == 'u')
+		forward_button_input(TYPE_BUTTON_UP, keymap);
+
+}
+
 int ws_videoframe_callback(
 	struct libwebsocket_context *context,
 	struct libwebsocket *wsi,
@@ -153,10 +178,19 @@ int ws_videoframe_callback(
 				return 1;
 
 			}
+			//libwebsocket_close_and_free_session(context, wsi, LWS_CLOSE_STATUS_NORMAL);
 
 			}break;
 
 		case LWS_CALLBACK_RECEIVE:
+		case LWS_CALLBACK_CLIENT_RECEIVE:
+
+			((char *)in)[len] = '\0';
+
+			char *rec = ((char *)in);
+			
+			if (rec[0] == 'd' || rec[0] == 'u')
+				ws_do_input(rec);
 
 			break;
 
@@ -246,7 +280,6 @@ void ws_client_render(struct client_ext *ce, struct ScreenBuffer *sbuf) {
 
 	sender++;
 	
-
 	// convert to a surface to handle variable modes
 	SDL_Surface *s = create_surface(sbuf->buf, sbuf->head.mode);
 
@@ -264,7 +297,12 @@ void ws_client_render(struct client_ext *ce, struct ScreenBuffer *sbuf) {
 
 	libwebsockets_broadcast(&ws_protocols[PROTOCOL_VIDEOFRAME], &buf[LWS_SEND_BUFFER_PRE_PADDING], sz);
 
-	SDL_FreeSurface(s);
+	SDL_FreeSurface(s);/*
+
+	unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + sbuf->head.size + LWS_SEND_BUFFER_POST_PADDING];
+	memcpy(&buf[LWS_SEND_BUFFER_PRE_PADDING], sbuf->buf, sbuf->head.size);
+
+	libwebsockets_broadcast(&ws_protocols[PROTOCOL_VIDEOFRAME], &buf[LWS_SEND_BUFFER_PRE_PADDING], sbuf->head.size);*/
 
 }
 

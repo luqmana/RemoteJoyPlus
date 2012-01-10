@@ -63,32 +63,74 @@
 					document.getElementById("status").style.backgroundColor = "#40ff40";
 					document.getElementById("status").textContent = "WebSocket Connection Opened.";
 
+					sock.send("HI I LOVE YOU!");
+
+					document.onkeydown = function(evt) {
+						evt = evt || window.event;
+
+						var e = evt.keyCode;
+
+						if (e == 37)
+							sock.send('dLEFT');
+						else if (e == 38)
+							sock.send('dUP');
+						else if (e == 39)	
+							sock.send('dRIGHT');
+						else if (e == 40)	
+							sock.send('dDOWN');
+
+					}
+
+					document.onkeyup = function(evt) {
+						evt = evt || window.event;
+
+						var e = evt.keyCode;
+
+						if (e == 37)
+							sock.send('uLEFT');
+						else if (e == 38)
+							sock.send('uUP');
+						else if (e == 39)	
+							sock.send('uRIGHT');
+						else if (e == 40)	
+							sock.send('uDOWN');
+
+					}
+
 				}
 
-				sock.onmessage = function got_packet(msg) {
+				sock.onmessage = function(msg) {
 
 					var img = msg.data;
 
 					window.i = img;
 
-					//var canvas = document.getElementById('screen-canvas');  
-					//var ctx = canvas.getContext('2d');
+					var canvas = document.getElementById('screen-canvas');  
+					var ctx = canvas.getContext('2d');
 
 					var reader = new FileReader();
 					reader.onload = function() {
 						
-						//var image = new Image();
-						var image = document.getElementById("screen");
-						/*image.onload = function() {
+						var image = new Image();
+						//var image = document.getElementById("screen");
+						image.onload = function() {
 							
 							ctx.drawImage(image, 0, 0);
 
-						};*/
+						};
 
-						image.src = "data:image/x-windows-bmp;base64," + window.btoa(reader.result);
+						image.src = "data:image/x-windows-bmp;base64," + window.btoa(reader.result);/*
+						window.r = reader;
+
+						var imageData = ctx.createImageData(480, 272);
+
+						imageData.data = reader.result;
+
+						ctx.putImageData(imageData, 0, 0);*/
 
 					};
 					reader.readAsBinaryString(img);
+					//reader.readAsArrayBuffer(img);
 
 				}
 

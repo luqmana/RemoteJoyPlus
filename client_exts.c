@@ -18,6 +18,8 @@
   */
 
 #include "client_exts.h"
+#include "rj_interface.h"
+#include "remotejoy_plus.h"
 
 int ce_ids = 0;
 
@@ -26,5 +28,19 @@ void register_client_ext(char* name, void (*ce_register_func)(struct client_ext 
 	ce->name = name;
 	ce->id = ++ce_ids;
 	ce_register_func(ce);
+
+}
+
+void forward_button_input(int type, unsigned int keymap) {
+	printf("TYPE_BUTTON_%s\n", (type == TYPE_BUTTON_DOWN) ? "DOWN" : "UP");
+	
+	if (type == TYPE_BUTTON_DOWN)
+		g_context.button_state |= keymap;
+	else if (type == TYPE_BUTTON_UP)
+		g_context.button_state &= ~keymap;
+	else
+		return;
+
+	rj_send_event(type, keymap);
 
 }

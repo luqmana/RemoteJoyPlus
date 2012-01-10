@@ -163,19 +163,11 @@ void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {
 
 		}
 
-		if (event.type == SDL_KEYDOWN) {
+		if (event.type == SDL_KEYDOWN)
+			forward_button_input(TYPE_BUTTON_DOWN, keymap);
+		else if (event.type == SDL_KEYUP)
+			forward_button_input(TYPE_BUTTON_UP, keymap);
 			
-			g_context.button_state |= keymap;
-			//int r = rj_send_event(TYPE_BUTTON_DOWN, keymap);
-			//printf("Blah[keymap:%d][r:%d]\n", keymap, r);
-
-		} else if (event.type == SDL_KEYUP) {
-			
-			g_context.button_state &= ~keymap;
-			rj_send_event(TYPE_BUTTON_UP, keymap);
-
-		}
-
 	}
 
 }
