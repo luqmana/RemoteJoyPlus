@@ -68,7 +68,9 @@ int ws_service_handler(void* p) {
 	
 	while (1) {
 		
-		libwebsocket_service(ws_context, 50);
+		usleep(20);
+
+		libwebsocket_service(ws_context, 20);
 
 	}
 
@@ -231,8 +233,8 @@ void ws_client_render(struct client_ext *ce, struct ScreenBuffer *sbuf) {
 	
 	if (ws_context == NULL)
 		return;
-
-	if (sender == 7)
+	
+	if (sender == 15)
 		sender = 0;
 
 	if (sender != 0) {
@@ -243,6 +245,7 @@ void ws_client_render(struct client_ext *ce, struct ScreenBuffer *sbuf) {
 	}
 
 	sender++;
+	
 
 	// convert to a surface to handle variable modes
 	SDL_Surface *s = create_surface(sbuf->buf, sbuf->head.mode);

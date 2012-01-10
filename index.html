@@ -67,16 +67,7 @@
 
 				sock.onmessage = function got_packet(msg) {
 
-					var img;
-					if (typeof msg.data.mozSlice == 'function') {
-
-						img = msg.data.mozSlice(0, msg.data.size, "image/bmp");
-
-					} else {
-						
-						img = msg.data.webkitSlice(0, msg.data.size, "image/bmp");
-
-					}
+					var img = msg.data;
 
 					window.i = img;
 

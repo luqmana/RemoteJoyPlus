@@ -66,7 +66,17 @@ void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {
 	if (screen == NULL)
 		return;
 
-	if (event.type == SDL_VIDEORESIZE) {
+	if (event.type == SDL_USEREVENT) {
+		
+		if (event.user.code == EVENT_DISABLE_SCREEN) {
+			
+			// Let's also black it out
+			SDL_FillRect(screen, NULL, 0x000000);
+			SDL_UpdateRect(screen, 0, 0, g_context.scr_width, g_context.scr_height);
+
+		}
+
+	} else if (event.type == SDL_VIDEORESIZE) {
 
 		// Free old screen and setup with new size
 
@@ -92,6 +102,21 @@ void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {
 
 			FE_PushEvent(&event);
 
+		} else if (key->keysym.sym == SDLK_F3) {
+
+			// Toggle full colour mode
+			if (event.type == SDL_KEYDOWN) {
+				
+				SDL_Event kevent;
+				kevent.type = SDL_USEREVENT;
+				kevent.user.code = EVENT_TOGGLE_FULLCOLOUR;
+				kevent.user.data1 = NULL;
+				kevent.user.data2 = NULL;
+				FE_PushEvent(&kevent);
+
+
+			}
+
 		} else if (key->keysym.sym == SDLK_F5) {
 
 			// Toggle Screen State
@@ -100,24 +125,10 @@ void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {
 				
 				SDL_Event kevent;
 				kevent.type = SDL_USEREVENT;
+				kevent.user.code = EVENT_TOGGLE_SCREEN;
 				kevent.user.data1 = NULL;
 				kevent.user.data2 = NULL;
-
-				if (g_context.scr_on) {
-
-					kevent.user.code = EVENT_DISABLE_SCREEN;
-					FE_PushEvent(&kevent);
-
-					// Let's also black it out
-					SDL_FillRect(screen, NULL, 0x000000);
-					SDL_UpdateRect(screen, 0, 0, g_context.scr_width, g_context.scr_height);
-
-				} else {
-					
-					kevent.user.code = EVENT_ENABLE_SCREEN;
-					FE_PushEvent(&kevent);
-
-				}
+				FE_PushEvent(&kevent);
 
 			}
 
@@ -155,8 +166,8 @@ void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {
 		if (event.type == SDL_KEYDOWN) {
 			
 			g_context.button_state |= keymap;
-			int r = rj_send_event(TYPE_BUTTON_DOWN, keymap);
-			printf("Blah[keymap:%d][r:%d]\n", keymap, r);
+			//int r = rj_send_event(TYPE_BUTTON_DOWN, keymap);
+			//printf("Blah[keymap:%d][r:%d]\n", keymap, r);
 
 		} else if (event.type == SDL_KEYUP) {
 			

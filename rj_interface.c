@@ -76,7 +76,7 @@ int rj_reader_handler(void *p) {
 					break;
 
 				}
-
+				
 				mode = LE32(head.mode);
 				size = LE32(head.size);
 				g_context.scr_buffers[frame].head.mode = mode;

@@ -41,6 +41,13 @@ int main(int argc, char **argv) {
 	printf("RemoteJoy+ for PSP (c) 2011 Luqman A.\n");
  	printf("Built: %s %s\n", __DATE__, __TIME__);
 
+ 	g_context.psp_flags = SCREEN_CMD_FULLCOLOR;
+ 	g_context.exit_flag = 0;
+ 	g_context.scr_width = PSP_SCREEN_W;
+ 	g_context.scr_height = PSP_SCREEN_H;
+ 	g_context.scr_on = 1;
+ 	g_context.button_state = 0;
+
  	if (SDL_Init(SDL_INIT_EVENTTHREAD) != 0) {
  		
  		fprintf(stderr, "Could not initialise SDL [%s].\n", SDL_GetError());
@@ -70,13 +77,6 @@ int main(int argc, char **argv) {
  	register_client_ext("SDL Client", &sdl_client, &ce_list[0]);
  	register_client_ext("WebSockets Client", &ws_client, &ce_list[1]);
 
- 	g_context.psp_flags = SCREEN_CMD_FULLCOLOR;
- 	g_context.exit_flag = 0;
- 	g_context.scr_width = PSP_SCREEN_W;
- 	g_context.scr_height = PSP_SCREEN_H;
- 	g_context.scr_on = 1;
- 	g_context.button_state = 0;
-
  	// Let the clients setup what they need to
  	for (int r = 0; r < num_client_exts; r++)
  		ce_list[r].setup(&ce_list[r]);
@@ -104,6 +104,30 @@ int main(int argc, char **argv) {
  		if (event.type == SDL_USEREVENT) {
  			
  			switch (event.user.code) {
+
+ 				case EVENT_TOGGLE_SCREEN:
+
+ 					if (g_context.scr_on) {
+ 						
+ 						event.user.code = EVENT_DISABLE_SCREEN;
+ 						FE_PushEvent(&event);
+
+ 					} else {
+ 						
+ 						event.user.code = EVENT_ENABLE_SCREEN;
+ 						FE_PushEvent(&event);
+
+ 					}
+
+ 					break;
+
+ 				case EVENT_TOGGLE_FULLCOLOUR:
+
+ 					g_context.psp_flags ^= SCREEN_CMD_FULLCOLOR;
+ 					rj_send_event(TYPE_SCREEN_CMD, SCREEN_CMD_ACTIVE | g_context.psp_flags);
+ 					g_context.scr_on = 1;
+
+ 					break;
  				
  				case EVENT_ENABLE_SCREEN:
 
