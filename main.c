@@ -121,6 +121,33 @@ int main(int argc, char **argv) {
 
  					break;
 
+ 				case EVENT_TOGGLE_SIZE:
+
+ 					g_context.scr_width = PSP_SCREEN_W;
+					g_context.scr_height = PSP_SCREEN_H;
+
+ 					if ((g_context.psp_flags & SCREEN_CMD_HSIZE) == 0) {
+ 						
+ 						g_context.scr_width >>= 1;
+ 						g_context.scr_height >>= 1;
+
+ 					}
+
+ 					g_context.psp_flags ^= SCREEN_CMD_HSIZE;
+
+ 					SDL_Event event;
+
+					event.type = SDL_VIDEORESIZE;
+					event.resize.w = g_context.scr_width;
+					event.resize.h = g_context.scr_height;
+
+					FE_PushEvent(&event);
+
+					rj_send_event(TYPE_SCREEN_CMD, SCREEN_CMD_ACTIVE | g_context.psp_flags);
+					g_context.scr_on = 1;
+
+ 					break;
+
  				case EVENT_TOGGLE_FULLCOLOUR:
 
  					g_context.psp_flags ^= SCREEN_CMD_FULLCOLOR;

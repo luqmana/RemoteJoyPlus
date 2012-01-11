@@ -35,7 +35,7 @@ void sdl_client_setup(struct client_ext *ce) {
 
 	}
 
-	screen = SDL_SetVideoMode(g_context.scr_width, g_context.scr_height, 0, SDL_HWSURFACE);
+	screen = SDL_SetVideoMode(g_context.scr_width, g_context.scr_height, 16, SDL_HWSURFACE);
 
 	if (screen == NULL) {
 
@@ -82,8 +82,6 @@ void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {
 
 		SDL_FreeSurface(screen);
 		screen = SDL_SetVideoMode(event.resize.w, event.resize.h, 0, SDL_HWSURFACE);
-		g_context.scr_width = event.resize.w;
-		g_context.scr_height = event.resize.h;
 
 	} else if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP)) {
 		
@@ -102,6 +100,8 @@ void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {
 
 			FE_PushEvent(&event);
 
+			return;
+
 		} else if (key->keysym.sym == SDLK_F3) {
 
 			// Toggle full colour mode
@@ -114,6 +114,24 @@ void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {
 				kevent.user.data2 = NULL;
 				FE_PushEvent(&kevent);
 
+				return;
+
+			}
+
+		} else if (key->keysym.sym == SDLK_F4) {
+
+			// Toggle Screen Size
+			
+			if (event.type == SDL_KEYDOWN) {
+				
+				SDL_Event kevent;
+				kevent.type = SDL_USEREVENT;
+				kevent.user.code = EVENT_TOGGLE_SIZE;
+				kevent.user.data1 = NULL;
+				kevent.user.data2 = NULL;
+				FE_PushEvent(&kevent);
+
+				return;
 
 			}
 
@@ -130,14 +148,20 @@ void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {
 				kevent.user.data2 = NULL;
 				FE_PushEvent(&kevent);
 
+				return;
+
 			}
 
 		} else if (key->keysym.sym == SDLK_F11) {
 			
 			// Make the screen fullscreen!
 			
-			if (event.type == SDL_KEYDOWN)
+			if (event.type == SDL_KEYDOWN) {
+
 				SDL_WM_ToggleFullScreen(screen);
+				return;
+
+			}
 
 		}
 		

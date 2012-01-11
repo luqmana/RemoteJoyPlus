@@ -30,7 +30,13 @@ int ws_http_callback(
 	enum libwebsocket_callback_reasons,
 	void *, void *, size_t);
 
-int ws_videoframe_callback(
+int ws_video_callback(
+	struct libwebsocket_context *,
+	struct libwebsocket *,
+	enum libwebsocket_callback_reasons,
+	void *, void *, size_t);
+
+int ws_control_callback(
 	struct libwebsocket_context *,
 	struct libwebsocket *,
 	enum libwebsocket_callback_reasons,
@@ -39,7 +45,8 @@ int ws_videoframe_callback(
 enum protocols {
 	
 	PROTOCOL_HTTP = 0,
-	PROTOCOL_VIDEOFRAME
+	PROTOCOL_RJ_VIDEO,
+	PROTOCOL_RJ_CONTROL,
 
 };
 
@@ -53,9 +60,14 @@ static struct libwebsocket_protocols ws_protocols[] = {
 		0						// Per session data size
 	},
 	{
-		"video-frame",			// Name
-		ws_videoframe_callback,	// Callback func
+		"rj-video",				// Name
+		ws_video_callback,		// Callback func
 		0						// Per session data size
+	},
+	{
+		"rj-control",				// Name
+		ws_control_callback,		// Callback func
+		0							// Per session data size
 	},
 	{ NULL, NULL, 0 }
 
@@ -180,7 +192,7 @@ void ws_do_input(char *rec) {
 
 }
 
-int ws_videoframe_callback(
+int ws_video_callback(
 	struct libwebsocket_context *context,
 	struct libwebsocket *wsi,
 	enum libwebsocket_callback_reasons reason,
@@ -189,8 +201,6 @@ int ws_videoframe_callback(
 	switch (reason) {
 		
 		case LWS_CALLBACK_ESTABLISHED:
-
-			printf("videoframe_callback: LWS_CALLBACK_ESTABLISHED\n");
 
 			break;
 
@@ -201,6 +211,54 @@ int ws_videoframe_callback(
 			if (n < 0) {
 				
 				fprintf(stderr, "Error writing video frame.\n");
+				return 1;
+
+			}
+			//libwebsocket_close_and_free_session(context, wsi, LWS_CLOSE_STATUS_NORMAL);
+
+			}break;
+
+		case LWS_CALLBACK_RECEIVE:
+		case LWS_CALLBACK_CLIENT_RECEIVE:
+
+			
+
+			break;
+
+		case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
+
+			// return non-zero here to kill connection
+
+			break;
+
+		default:
+			break;
+
+	}
+
+	return 0;
+
+}
+
+int ws_control_callback(
+	struct libwebsocket_context *context,
+	struct libwebsocket *wsi,
+	enum libwebsocket_callback_reasons reason,
+	void *user, void *in, size_t len) {
+
+	switch (reason) {
+		
+		case LWS_CALLBACK_ESTABLISHED:
+
+			break;
+
+		case LWS_CALLBACK_BROADCAST:{
+
+			int n = libwebsocket_write(wsi, (unsigned char *)in, len, LWS_WRITE_BINARY);
+
+			if (n < 0) {
+				
+				fprintf(stderr, "Error control info.\n");
 				return 1;
 
 			}
@@ -287,6 +345,15 @@ void ws_client_handle_event(struct client_ext *ce, SDL_Event event) {
 	if (ws_context == NULL)
 		return;
 
+	if (event.type == SDL_VIDEORESIZE) {
+		
+		unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + 6 + LWS_SEND_BUFFER_POST_PADDING];
+		memcpy(&buf[LWS_SEND_BUFFER_PRE_PADDING], "resize", 6);
+
+		libwebsockets_broadcast(&ws_protocols[PROTOCOL_RJ_CONTROL], &buf[LWS_SEND_BUFFER_PRE_PADDING], 6);
+
+	}
+
 }
 
 void ws_client_render(struct client_ext *ce, struct ScreenBuffer *sbuf) {
@@ -307,7 +374,8 @@ void ws_client_render(struct client_ext *ce, struct ScreenBuffer *sbuf) {
 	sender++;
 	
 	// convert to a surface to handle variable modes
-	SDL_Surface *s = create_surface(sbuf->buf, sbuf->head.mode);
+	SDL_Surface *r = create_surface(sbuf->buf, sbuf->head.mode);
+	SDL_Surface *s = SDL_DisplayFormat(r);
 
 	SDL_RWops *rw;
 	char b[PSP_SCREEN_W * PSP_SCREEN_H * 4];
@@ -321,14 +389,15 @@ void ws_client_render(struct client_ext *ce, struct ScreenBuffer *sbuf) {
 	unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + sz + LWS_SEND_BUFFER_POST_PADDING];
 	memcpy(&buf[LWS_SEND_BUFFER_PRE_PADDING], b, sz);
 
-	libwebsockets_broadcast(&ws_protocols[PROTOCOL_VIDEOFRAME], &buf[LWS_SEND_BUFFER_PRE_PADDING], sz);
+	libwebsockets_broadcast(&ws_protocols[PROTOCOL_RJ_VIDEO], &buf[LWS_SEND_BUFFER_PRE_PADDING], sz);
 
-	SDL_FreeSurface(s);/*
+	SDL_FreeSurface(s);
+	SDL_FreeSurface(r);/*
 
 	unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + sbuf->head.size + LWS_SEND_BUFFER_POST_PADDING];
 	memcpy(&buf[LWS_SEND_BUFFER_PRE_PADDING], sbuf->buf, sbuf->head.size);
 
-	libwebsockets_broadcast(&ws_protocols[PROTOCOL_VIDEOFRAME], &buf[LWS_SEND_BUFFER_PRE_PADDING], sbuf->head.size);*/
+	libwebsockets_broadcast(&ws_protocols[PROTOCOL_RJ_VIDEO], &buf[LWS_SEND_BUFFER_PRE_PADDING], sbuf->head.size);*/
 
 }
 
