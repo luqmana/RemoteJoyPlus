@@ -24,11 +24,11 @@
 			<div id="status-control">Control: Not initialized.</div>
 		</table>
 
-		<canvas id="screen-canvas" width="480" height="272"></canvas>
+		<canvas style="margin: auto 0;" id="screen-canvas" width="480" height="272"></canvas>
 
 		<script type="text/JavaScript">
 
-			// Need to define this as firefox trunk namespaces web sockets.
+			// Compat things
 			window.WebSocket = (typeof MozWebSocket == "function") ? MozWebSocket : WebSocket;
 
 			window.pleaseClear = false;
@@ -116,8 +116,38 @@
 
 						}
 
-						document.onkeydown = keyHandler;
-						document.onkeyup = keyHandler;
+						document.addEventListener('keydown', keyHandler);
+						document.addEventListener('keyup', keyHandler);
+
+						function cmdHandler(evt) {
+							evt = evt || window.event;
+
+							var e = evt.keyCode;
+
+							if (e == 114) {
+								
+								sock.send('cTOGGLE_FULLCOLOUR');
+								evt.preventDefault();
+								return false;
+
+							} else if (e == 115) {
+								
+								sock.send('cTOGGLE_SIZE');
+								evt.preventDefault();
+								return false;
+
+							} else if (e == 116) {
+
+								sock.send('cTOGGLE_SCREEN');
+								evt.preventDefault();
+								return false;
+
+							}
+
+
+						}
+
+						document.addEventListener('keydown', cmdHandler);
 
 					}
 
@@ -131,6 +161,8 @@
 							
 							if (f.result == 'resize')
 								window.pleaseClear = true;
+							else if (f.result == 'clear')
+								clear();
 
 						}
 						f.readAsBinaryString(msg.data);
@@ -142,7 +174,53 @@
 						document.getElementById("status-control").style.backgroundColor = "#ff4040";
 						document.getElementById("status-control").textContent = "Control: Connection Closed.";
 
+						document.onkeypress = document.onkeydown = document.onkeyup = null;
+
 					}
+
+				}
+
+				function clear() {
+					
+					var canvas = document.getElementById('screen-canvas');  
+					var ctx = canvas.getContext('2d');
+
+					var imageData = ctx.createImageData(480, 270);
+
+					for (var i = 0; i < 480*272*4; i += 4) {
+						
+						imageData.data[i] = 0;
+						imageData.data[i+1] = 0;
+						imageData.data[i+2] = 0;
+						imageData.data[i+3] = 255;
+
+					}
+
+					ctx.putImageData(imageData, 0, 0);
+
+				}
+
+				function render(r) {
+					
+					var canvas = document.getElementById('screen-canvas');  
+					var ctx = canvas.getContext('2d');
+
+					var imageData = ctx.createImageData(480, 270);
+
+					for (var i = 0; i < r.length; i += 8) {
+						
+						imageData.data[i] = r.charCodeAt(i) & 0xFF;
+						imageData.data[i+1] = r.charCodeAt(i+1) & 0xFF;
+						imageData.data[i+2] = r.charCodeAt(i+2) & 0xFF;
+						imageData.data[i+3] = 255;
+						imageData.data[i+4] = r.charCodeAt(i+4) & 0xFF;
+						imageData.data[i+5] = r.charCodeAt(i+5) & 0xFF;
+						imageData.data[i+6] = r.charCodeAt(i+6) & 0xFF;
+						imageData.data[i+7] = 255;
+
+					}
+
+					ctx.putImageData(imageData, 0, 0);
 
 				}
 
@@ -157,35 +235,11 @@
 
 					var reader = new FileReader();
 					reader.onload = function() {
+
+						render(reader.result);
 						
-						var image = new Image();
-						//var image = document.getElementById("screen");
-						image.onload = function() {
-							
-							if (window.pleaseClear) {
-
-								ctx.clearRect(0, 0, 480, 272);
-								window.pleaseClear = false;
-								return;
-
-							}
-
-							ctx.drawImage(image, 0, 0);
-
-						};
-
-						image.src = "data:image/x-windows-bmp;base64," + window.btoa(reader.result);/*
-						window.r = reader;
-
-						var imageData = ctx.createImageData(480, 272);
-
-						imageData.data = reader.result;
-
-						ctx.putImageData(imageData, 0, 0);*/
-
 					};
 					reader.readAsBinaryString(img);
-					//reader.readAsArrayBuffer(img);
 
 				}
 

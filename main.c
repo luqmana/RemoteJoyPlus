@@ -30,6 +30,8 @@
 #include "sdl_client.h"
 #include "ws_client.h"
 
+#define MAX_CLIENTS		5
+
 /**
  * Yes! A global struct holding ALL THE INFO!
  * Let's hope we have no race conditions...
@@ -48,7 +50,7 @@ int main(int argc, char **argv) {
  	g_context.scr_on = 1;
  	g_context.button_state = 0;
 
- 	if (SDL_Init(SDL_INIT_EVENTTHREAD) != 0) {
+ 	if (SDL_Init(SDL_INIT_EVENTTHREAD | SDL_INIT_VIDEO) != 0) {
  		
  		fprintf(stderr, "Could not initialise SDL [%s].\n", SDL_GetError());
  		return 1;
@@ -70,12 +72,32 @@ int main(int argc, char **argv) {
  	}
 
  	// Our list of outputs
- 	int num_client_exts = 2;
- 	struct client_ext ce_list[num_client_exts];
+ 	int num_client_exts = 0;
+ 	struct client_ext ce_list[MAX_CLIENTS];
 
- 	// Register some output now
- 	register_client_ext("SDL Client", &sdl_client, &ce_list[0]);
- 	register_client_ext("WebSockets Client", &ws_client, &ce_list[1]);
+ 	for (int i = 0; i < argc; i++) {
+ 		
+ 		if (strcmp(argv[i], "--sdl") == 0) {
+ 			
+ 			register_client_ext("SDL Client", &sdl_client, &ce_list[num_client_exts]);
+ 			num_client_exts++;
+
+ 		} else if (strcmp(argv[i], "--ws") == 0) {
+ 			
+ 			register_client_ext("WebSockets Client", &ws_client, &ce_list[num_client_exts]);
+ 			num_client_exts++;
+
+ 		}
+
+ 	}
+
+ 	if (num_client_exts == 0) {
+ 		
+ 		// SDL is the default client
+ 		register_client_ext("SDL Client", &sdl_client, &ce_list[0]);
+ 		num_client_exts++;
+
+ 	}
 
  	// Let the clients setup what they need to
  	for (int r = 0; r < num_client_exts; r++)

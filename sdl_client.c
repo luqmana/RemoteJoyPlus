@@ -56,9 +56,6 @@ void sdl_client_cleanup(struct client_ext *ce) {
 
 	}
 
-	if (SDL_WasInit(SDL_INIT_VIDEO) != 0)
-		SDL_QuitSubSystem(SDL_INIT_VIDEO);
-
 }
 
 void sdl_client_handle_event(struct client_ext *ce, SDL_Event event) {

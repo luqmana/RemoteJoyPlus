@@ -19,6 +19,7 @@
 
 #include "ws_client.h"
 
+#include "fast_events.h"
 #include <libwebsockets.h>
 #include <SDL_thread.h>
 #include <unistd.h>
@@ -42,6 +43,10 @@ int ws_control_callback(
 	enum libwebsocket_callback_reasons,
 	void *, void *, size_t);
 
+struct per_session_data__video {
+	unsigned int lasttime;
+};
+
 enum protocols {
 	
 	PROTOCOL_HTTP = 0,
@@ -49,8 +54,6 @@ enum protocols {
 	PROTOCOL_RJ_CONTROL,
 
 };
-
-int sender = 0;
 
 static struct libwebsocket_protocols ws_protocols[] = {
 	
@@ -62,7 +65,7 @@ static struct libwebsocket_protocols ws_protocols[] = {
 	{
 		"rj-video",				// Name
 		ws_video_callback,		// Callback func
-		0						// Per session data size
+		sizeof(struct per_session_data__video)						// Per session data size
 	},
 	{
 		"rj-control",				// Name
@@ -80,9 +83,9 @@ int ws_service_handler(void* p) {
 	
 	while (1) {
 		
-		usleep(20);
+		usleep(3);
 
-		libwebsocket_service(ws_context, 20);
+		libwebsocket_service(ws_context, 25);
 
 	}
 
@@ -138,6 +141,41 @@ int ws_http_callback(
 	}
 
 	return 0;
+
+}
+
+void ws_do_cmd(char *rec) {
+
+	char *k = &rec[1];
+
+	if (strcmp(k, "TOGGLE_FULLCOLOUR") == 0) {
+		
+		SDL_Event kevent;
+		kevent.type = SDL_USEREVENT;
+		kevent.user.code = EVENT_TOGGLE_FULLCOLOUR;
+		kevent.user.data1 = NULL;
+		kevent.user.data2 = NULL;
+		FE_PushEvent(&kevent);
+
+	} else if (strcmp(k, "TOGGLE_SIZE") == 0) {
+
+		SDL_Event kevent;
+		kevent.type = SDL_USEREVENT;
+		kevent.user.code = EVENT_TOGGLE_SIZE;
+		kevent.user.data1 = NULL;
+		kevent.user.data2 = NULL;
+		FE_PushEvent(&kevent);
+
+	} else if (strcmp(k, "TOGGLE_SCREEN") == 0) {
+
+		SDL_Event kevent;
+		kevent.type = SDL_USEREVENT;
+		kevent.user.code = EVENT_TOGGLE_SCREEN;
+		kevent.user.data1 = NULL;
+		kevent.user.data2 = NULL;
+		FE_PushEvent(&kevent);
+
+	}
 
 }
 
@@ -198,13 +236,20 @@ int ws_video_callback(
 	enum libwebsocket_callback_reasons reason,
 	void *user, void *in, size_t len) {
 
+	struct per_session_data__video *psdv = user;
+
 	switch (reason) {
 		
 		case LWS_CALLBACK_ESTABLISHED:
 
+			psdv->lasttime = SDL_GetTicks();
+
 			break;
 
 		case LWS_CALLBACK_BROADCAST:{
+
+			if ((SDL_GetTicks() - psdv->lasttime) < 50)
+				return 0;
 
 			int n = libwebsocket_write(wsi, (unsigned char *)in, len, LWS_WRITE_BINARY);
 
@@ -215,12 +260,12 @@ int ws_video_callback(
 
 			}
 			//libwebsocket_close_and_free_session(context, wsi, LWS_CLOSE_STATUS_NORMAL);
+			psdv->lasttime = SDL_GetTicks();
 
 			}break;
 
 		case LWS_CALLBACK_RECEIVE:
-		case LWS_CALLBACK_CLIENT_RECEIVE:
-
+			
 			
 
 			break;
@@ -262,12 +307,10 @@ int ws_control_callback(
 				return 1;
 
 			}
-			//libwebsocket_close_and_free_session(context, wsi, LWS_CLOSE_STATUS_NORMAL);
 
 			}break;
 
 		case LWS_CALLBACK_RECEIVE:
-		case LWS_CALLBACK_CLIENT_RECEIVE:
 
 			((char *)in)[len] = '\0';
 
@@ -275,6 +318,8 @@ int ws_control_callback(
 			
 			if (rec[0] == 'd' || rec[0] == 'u')
 				ws_do_input(rec);
+			else if (rec[0] == 'c')
+				ws_do_cmd(rec);
 
 			break;
 
@@ -297,13 +342,12 @@ void ws_client_setup(struct client_ext *ce) {
 	
 	printf("Hi! From %s [id: %d]. \n", ce->name, ce->id);
 
-	int opts = 0;
-
 	ws_context = libwebsocket_create_context(
 					DEFAULT_WS_PORT, DEFAULT_WS_IP,
 					ws_protocols,
 					libwebsocket_internal_extensions,
-					NULL, NULL, -1, -1, opts);
+					//"rj.pem", "rj.key.pem", -1, -1, opts); need key files for SSL
+					NULL, NULL, -1, -1, 0);
 
 	if (ws_context == NULL) {
 		
@@ -352,6 +396,17 @@ void ws_client_handle_event(struct client_ext *ce, SDL_Event event) {
 
 		libwebsockets_broadcast(&ws_protocols[PROTOCOL_RJ_CONTROL], &buf[LWS_SEND_BUFFER_PRE_PADDING], 6);
 
+	} else if (event.type == SDL_USEREVENT) {
+		
+		if (event.user.code == EVENT_DISABLE_SCREEN) {
+			
+			unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + 5 + LWS_SEND_BUFFER_POST_PADDING];
+			memcpy(&buf[LWS_SEND_BUFFER_PRE_PADDING], "clear", 5);
+
+			libwebsockets_broadcast(&ws_protocols[PROTOCOL_RJ_CONTROL], &buf[LWS_SEND_BUFFER_PRE_PADDING], 5);
+
+		}
+
 	}
 
 }
@@ -361,43 +416,10 @@ void ws_client_render(struct client_ext *ce, struct ScreenBuffer *sbuf) {
 	if (ws_context == NULL)
 		return;
 	
-	if (sender == 15)
-		sender = 0;
-
-	if (sender != 0) {
-		
-		sender++;
-		return;
-
-	}
-
-	sender++;
-	
-	// convert to a surface to handle variable modes
-	SDL_Surface *r = create_surface(sbuf->buf, sbuf->head.mode);
-	SDL_Surface *s = SDL_DisplayFormat(r);
-
-	SDL_RWops *rw;
-	char b[PSP_SCREEN_W * PSP_SCREEN_H * 4];
-	rw = SDL_RWFromMem(b, sizeof(b));
-	SDL_SaveBMP_RW(s, rw, 0);
-
-	// now to get the size of the bmp
-	int sz;
-	memcpy(&sz, b + 2, 4);
-
-	unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + sz + LWS_SEND_BUFFER_POST_PADDING];
-	memcpy(&buf[LWS_SEND_BUFFER_PRE_PADDING], b, sz);
-
-	libwebsockets_broadcast(&ws_protocols[PROTOCOL_RJ_VIDEO], &buf[LWS_SEND_BUFFER_PRE_PADDING], sz);
-
-	SDL_FreeSurface(s);
-	SDL_FreeSurface(r);/*
-
 	unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + sbuf->head.size + LWS_SEND_BUFFER_POST_PADDING];
 	memcpy(&buf[LWS_SEND_BUFFER_PRE_PADDING], sbuf->buf, sbuf->head.size);
 
-	libwebsockets_broadcast(&ws_protocols[PROTOCOL_RJ_VIDEO], &buf[LWS_SEND_BUFFER_PRE_PADDING], sbuf->head.size);*/
+	libwebsockets_broadcast(&ws_protocols[PROTOCOL_RJ_VIDEO], &buf[LWS_SEND_BUFFER_PRE_PADDING], sbuf->head.size);
 
 }
 
