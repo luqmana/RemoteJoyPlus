@@ -83,9 +83,7 @@ int ws_service_handler(void* p) {
 	
 	while (1) {
 		
-		usleep(3);
-
-		libwebsocket_service(ws_context, 25);
+		libwebsocket_service(ws_context, 10);
 
 	}
 
@@ -248,7 +246,7 @@ int ws_video_callback(
 
 		case LWS_CALLBACK_BROADCAST:{
 
-			if ((SDL_GetTicks() - psdv->lasttime) < 50)
+			if ((SDL_GetTicks() - psdv->lasttime) < 40)
 				return 0;
 
 			int n = libwebsocket_write(wsi, (unsigned char *)in, len, LWS_WRITE_BINARY);
@@ -415,12 +413,24 @@ void ws_client_render(struct client_ext *ce, struct ScreenBuffer *sbuf) {
 	
 	if (ws_context == NULL)
 		return;
+
+	// Normalize to a 24bit rgb format as we might get various
+	// modes from the PSP and doing it on the javascript side is
+	// annoying :|
+	SDL_Surface *r = create_surface(sbuf->buf, sbuf->head.mode);
+	SDL_Surface *s = SDL_CreateRGBSurface(SDL_SWSURFACE, g_context.scr_width, g_context.scr_height, 32, LE32(0x000000FF), LE32(0x0000FF00), LE32(0x00FF0000), 0);
+	SDL_BlitSurface(r, NULL, s, NULL);
+
+	int sz = s->w * s->h * s->format->BytesPerPixel;
+
+	unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + sz + LWS_SEND_BUFFER_POST_PADDING];
+	memcpy(&buf[LWS_SEND_BUFFER_PRE_PADDING], s->pixels, sz);
+
+	libwebsockets_broadcast(&ws_protocols[PROTOCOL_RJ_VIDEO], &buf[LWS_SEND_BUFFER_PRE_PADDING], sz);
+
+	SDL_FreeSurface(s);
+	SDL_FreeSurface(r);
 	
-	unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + sbuf->head.size + LWS_SEND_BUFFER_POST_PADDING];
-	memcpy(&buf[LWS_SEND_BUFFER_PRE_PADDING], sbuf->buf, sbuf->head.size);
-
-	libwebsockets_broadcast(&ws_protocols[PROTOCOL_RJ_VIDEO], &buf[LWS_SEND_BUFFER_PRE_PADDING], sbuf->head.size);
-
 }
 
 void ws_client(struct client_ext *ce) {

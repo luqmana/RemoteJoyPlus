@@ -3,35 +3,158 @@
 
 	<head>
 
- 		<meta name="charset" content="utf-8" />
+ 		<meta charset="utf-8" />
  		
  		<title>RemoteJoy over WebSockets</title>
+
+ 		<style type="text/css">
+
+ 		body {
+ 			text-align: center;
+ 		}
+
+ 		#wrapper {
+ 			width: 75%;
+ 			margin: auto auto;
+ 			background: #f5f5f5;
+ 			height: 100%;
+ 		}
+
+ 		h1 { font-size: 38px; text-transform: uppercase; letter-spacing: 3px; }
+		h2 { font-size: 152% }
+		h3, h4 { font-size: 122%; }
+		h1, h2, h3, h4 { color: #333; }
+		p { font-size: 100%; line-height: 18px; padding-right: 3em; }
+
+		hr {
+			display: block;
+			position: relative;
+			padding: 0;
+			margin: 8px auto;
+			width: 100%;
+			clear: both;
+			border: none;
+			border-top: 1px solid #AAA;
+			border-bottom: 1px solid #FFF;
+			font-size: 1px;
+			line-height: 0;
+			overflow: visible;
+		}
+
+		table {
+			margin-left: auto;
+			margin-right: auto;
+		}
+
+		td {
+			
+			padding: 1em;
+
+		}
+
+
+ 		</style>
 
 	</head>
 
 	<body>
 
-		<h2>RemoteJoy</h2>
+		<div id="wrapper">
 
-		<p>
-			Export your PSP screen over http now! With WebSockets and canvas you can exhibit your PSP's display.
-			<br />
-			Based on TyRaNiD's original code extended with WebSockets support.
-		</p>
+			<hr />
 
-		<table>
-			<div id="status-video">Video: Not initialized.</div>
-			<div id="status-control">Control: Not initialized.</div>
-		</table>
+			<h1>RemoteJoy + WebSockets &amp; Canvas</h1>
 
-		<canvas style="margin: auto 0;" id="screen-canvas" width="480" height="272"></canvas>
+			<p>
+				Export your PSP screen over http now! With WebSockets and canvas you can exhibit your PSP's display.
+				<br />
+				Based on TyRaNiD's original code extended to support more.
+			</p>
+
+			<div style="padding: 5px;">
+				<strong>Video</strong>: <span id="status-video">Not initialized</span>
+				<strong>Control</strong>: <span id="status-control">Not initialized</span>
+			</div>
+
+			<canvas id="screen-canvas" width="480" height="272">
+				<p>Hi! You need a browser capable of working with canvas. Try Firefox or Chrome!</p>
+			</canvas>
+
+			<div>
+				<button id="size-button" type="button">Toggle Size</button>
+				<button id="screen-button" type="button">Toggle Screen</button>
+			</div>
+
+			<hr />
+
+			<h2>Input</h2>
+
+			<p>You can directly control your PSP from this page using the following controls:</p>
+
+			<table>
+
+				<tr>
+					<td>D-Pad</td>
+					<td>Arrow Keys</td>
+
+					<td>Start</td>
+					<td>Enter</td>
+				</tr>
+				<tr>
+					<td>× (Cross)</td>
+					<td>Z</td>
+
+					<td>Select</td>
+					<td>Space</td>
+				</tr>
+				<tr>
+					<td>◯ (Circle)</td>
+					<td>X</td>
+
+					<td>Home</td>
+					<td>Backspace</td>
+				</tr>
+				<tr>
+					<td>□ (Square)</td>
+					<td>A</td>
+
+					<td>Screen / Display / Brightness</td>
+					<td>M</td>
+				</tr>
+				<tr>
+					<td>△ (Triangle)</td>
+					<td>S</td>
+
+					<td>♪ (Note / Music)</td>
+					<td>N</td>
+				</tr>
+				<tr>
+					<td>Left Trigger</td>
+					<td>Q</td>
+
+					<td>Volume Up</td>
+					<td>= (+)</td>
+				</tr>
+				<tr>
+					<td>Right Trigger</td>
+					<td>W</td>
+
+					<td>Volume Down</td>
+					<td>-</td>
+				</tr>
+
+			</table>
+
+			<hr />
+
+		</div>
 
 		<script type="text/JavaScript">
 
 			// Compat things
 			window.WebSocket = (typeof MozWebSocket == "function") ? MozWebSocket : WebSocket;
 
-			window.pleaseClear = false;
+			window.fullSize = true;
 
 			function get_ws_url() {
 				
@@ -63,14 +186,26 @@
 				vsock.onopen = function() {
 					
 					document.getElementById("status-video").style.backgroundColor = "#40ff40";
-					document.getElementById("status-video").textContent = "Video: Connection Opened.";
+					document.getElementById("status-video").textContent = "Connection Opened";
 
 					var sock = new WebSocket(get_ws_url(), "rj-control");
 
 					sock.onopen = function() {
 
+						document.getElementById("screen-button").onclick = function(evt) {
+							
+							sock.send("cTOGGLE_SCREEN");
+
+						}
+
+						document.getElementById("size-button").onclick = function(evt) {
+							
+							sock.send("cTOGGLE_SIZE");
+
+						}
+
 						document.getElementById("status-control").style.backgroundColor = "#40ff40";
-						document.getElementById("status-control").textContent = "Control: Connection Opened.";
+						document.getElementById("status-control").textContent = "Connection Opened";
 
 						function keyHandler(evt) {
 							evt = evt || window.event;
@@ -112,6 +247,11 @@
 								sock.send(t + 'VOLDOWN');
 							else if (e == 8)			// BACKSPACE
 								sock.send(t + 'HOME');
+							else
+								return;
+
+							evt.preventDefault();
+							return false;
 							
 
 						}
@@ -159,11 +299,27 @@
 						var f = new FileReader();
 						f.onload = function() {
 							
-							if (f.result == 'resize')
-								window.pleaseClear = true;
-							else if (f.result == 'clear')
-								clear();
+							if (f.result == 'resize') {
 
+								clear(0xFF);
+								window.fullSize = !window.fullSize;
+
+								if (window.fullSize) {
+									
+									canvas.width = 480;
+									canvas.height = 272;
+
+								} else {
+									
+									canvas.width = 240;
+									canvas.height = 135;
+
+								}
+
+							} else if (f.result == 'clear') {
+								clear(0);
+							}
+							
 						}
 						f.readAsBinaryString(msg.data);
 
@@ -172,7 +328,7 @@
 					sock.onclose = function() {
 					
 						document.getElementById("status-control").style.backgroundColor = "#ff4040";
-						document.getElementById("status-control").textContent = "Control: Connection Closed.";
+						document.getElementById("status-control").textContent = "Connection Closed";
 
 						document.onkeypress = document.onkeydown = document.onkeyup = null;
 
@@ -180,18 +336,30 @@
 
 				}
 
-				function clear() {
+				function clear(c) {
 					
 					var canvas = document.getElementById('screen-canvas');  
 					var ctx = canvas.getContext('2d');
+					var imageData = null;
+					var s = 0;
 
-					var imageData = ctx.createImageData(480, 270);
-
-					for (var i = 0; i < 480*272*4; i += 4) {
+					if (window.fullSize) {
 						
-						imageData.data[i] = 0;
-						imageData.data[i+1] = 0;
-						imageData.data[i+2] = 0;
+						imageData = ctx.createImageData(480, 270);
+						s = 480*272*4;
+
+					} else {
+
+						imageData = ctx.createImageData(240, 135);
+						s = 240*135*4;
+
+					}
+
+					for (var i = 0; i < s; i += 4) {
+						
+						imageData.data[i] = c;
+						imageData.data[i+1] = c;
+						imageData.data[i+2] = c;
 						imageData.data[i+3] = 255;
 
 					}
@@ -200,22 +368,26 @@
 
 				}
 
-				function render(r) {
-					
+				function render(ra) {
+					window.f = ra;
 					var canvas = document.getElementById('screen-canvas');  
 					var ctx = canvas.getContext('2d');
+					var imageData = null;
 
-					var imageData = ctx.createImageData(480, 270);
+					if (window.fullSize)
+						imageData = ctx.createImageData(480, 270);
+					else
+						imageData = ctx.createImageData(240, 135);
 
-					for (var i = 0; i < r.length; i += 8) {
+					for (var i = 0; i < ra.length; i += 8) {
 						
-						imageData.data[i] = r.charCodeAt(i) & 0xFF;
-						imageData.data[i+1] = r.charCodeAt(i+1) & 0xFF;
-						imageData.data[i+2] = r.charCodeAt(i+2) & 0xFF;
+						imageData.data[i+0] = ra.charCodeAt(i+0);
+						imageData.data[i+1] = ra.charCodeAt(i+1);
+						imageData.data[i+2] = ra.charCodeAt(i+2);
 						imageData.data[i+3] = 255;
-						imageData.data[i+4] = r.charCodeAt(i+4) & 0xFF;
-						imageData.data[i+5] = r.charCodeAt(i+5) & 0xFF;
-						imageData.data[i+6] = r.charCodeAt(i+6) & 0xFF;
+						imageData.data[i+4] = ra.charCodeAt(i+4);
+						imageData.data[i+5] = ra.charCodeAt(i+5);
+						imageData.data[i+6] = ra.charCodeAt(i+6);
 						imageData.data[i+7] = 255;
 
 					}
@@ -246,7 +418,7 @@
 				vsock.onclose = function() {
 					
 					document.getElementById("status-video").style.backgroundColor = "#ff4040";
-					document.getElementById("status-video").textContent = "Video: Connection Closed.";
+					document.getElementById("status-video").textContent = "Connection Closed";
 
 				}
 

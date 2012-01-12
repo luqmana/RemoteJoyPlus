@@ -1,7 +1,7 @@
 OUTPUT=remotejoy-plus
 OBJS=main.o client_exts.o fast_events.o sdl_client.o rj_interface.o utils.o ws_client.o
 
-CFLAGS=-std=c99 -O0 -Wall -g $(shell /usr/bin/sdl-config --cflags) -I../WebSockets
+CFLAGS=-std=c99 -O2 -Wall -g $(shell /usr/bin/sdl-config --cflags) -I../WebSockets
 
 PREFIX=$(shell psp-config --pspdev-path 2> /dev/null)
 
