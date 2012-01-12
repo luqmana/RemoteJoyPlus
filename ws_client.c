@@ -336,7 +336,7 @@ int ws_control_callback(
 
 }
 
-void ws_client_setup(struct client_ext *ce) {
+void ws_client_setup(struct client_ext *ce, int argc, char **argv) {
 	
 	printf("Hi! From %s [id: %d]. \n", ce->name, ce->id);
 

@@ -26,7 +26,7 @@ struct client_ext {
 	
 	char *name;
 	int id;
-	void (*setup)(struct client_ext *);
+	void (*setup)(struct client_ext *, int, char **);
 	void (*handle_event)(struct client_ext *, SDL_Event);
 	void (*render)(struct client_ext *, struct ScreenBuffer *);
 	void (*cleanup)(struct client_ext *);

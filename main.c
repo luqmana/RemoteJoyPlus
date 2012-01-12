@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
 
  	// Let the clients setup what they need to
  	for (int r = 0; r < num_client_exts; r++)
- 		ce_list[r].setup(&ce_list[r]);
+ 		ce_list[r].setup(&ce_list[r], argc, argv);
 
  	if (rj_reader_start() != 0) {
  		

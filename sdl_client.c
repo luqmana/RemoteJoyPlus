@@ -24,7 +24,7 @@
 
 SDL_Surface* screen = NULL;
 
-void sdl_client_setup(struct client_ext *ce) {
+void sdl_client_setup(struct client_ext *ce, int argc, char **argv) {
 	
 	printf("Hi! From %s [id: %d]. \n", ce->name, ce->id);
 
