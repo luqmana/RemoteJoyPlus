@@ -379,7 +379,8 @@
 					else
 						imageData = ctx.createImageData(240, 135);
 
-					for (var i = 0; i < ra.length; i += 8) {
+					var l = ra.length;
+					for (var i = 0; i < l; i += 8) {
 						
 						imageData.data[i+0] = ra.charCodeAt(i+0);
 						imageData.data[i+1] = ra.charCodeAt(i+1);

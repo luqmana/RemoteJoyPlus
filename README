@@ -6,12 +6,20 @@ RemoteJoy+
  client extension which can connect to the PSP receiving
  the output and forwarding input even simultaneously.
 
- Currently there exists a local SDL client which outputs to the
- screen. It doesn't accept input as of yet.
- There is also a WebSockets client which will eventually be
- able to broadcast the screen to WebSocket capable browsers
- [in due time].
- 
+ There are currently two clients:
+       1) SDL Client
+       2) WebSockets client
+
+ Both broadcast the screen and forward input to the PSP.
+ You can even use both at the same time. Perhaps set it up
+ such that you just launch a browsers to demo some app/game.
+
+ The WebSocket client implements two sub protocols. One for
+ the actual video frames and the other for control (input and
+ other things like toggling the screen). Video frames are basically
+ just sent down as is in RGBA format. An example (index.html) is
+ provided.
+
 Licensed under the BSD license.
   
 Copyright (c) 2006 James F. <tyranid@gmail.com>
