@@ -124,9 +124,6 @@ enum PspButtons {
 	PSP_BUTTON_MAX   = 17
 };
 
-extern int rj_reader_sock;
-extern SDL_Thread *rj_reader_thread;
-
 int rj_interface_init();
 
 int rj_reader_start();

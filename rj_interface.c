@@ -37,8 +37,8 @@
 	#define SOL_TCP IPPROTO_TCP
 #endif
 
-int rj_sock = -1;
-SDL_Thread *rj_reader_thread = NULL;
+static int rj_sock = -1;
+static SDL_Thread *rj_reader_thread = NULL;
 
 int rj_reader_handler(void *p) {
 	
