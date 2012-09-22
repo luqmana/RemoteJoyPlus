@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="RemoteJoyPlus : Export your PSP display." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>RemoteJoyPlus</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/luqmana/RemoteJoyPlus">View on GitHub</a>
+
+          <h1 id="project_title">RemoteJoyPlus</h1>
+          <h2 id="project_tagline">Export your PSP display.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/luqmana/RemoteJoyPlus/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/luqmana/RemoteJoyPlus/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>RemoteJoy+</p>
+
+<p>This is based on RemoteJoy by James F. (TyRaNiD).</p>
+
+<p>It provides an easy framework which allows building
+ client extension which can connect to the PSP receiving
+ the output and forwarding input even simultaneously.</p>
+
+<p>There are currently two clients:
+       1) SDL Client
+       2) WebSockets client</p>
+
+<p>Both broadcast the screen and forward input to the PSP.
+ You can even use both at the same time. Perhaps set it up
+ such that you just launch a browsers to demo some app/game.</p>
+
+<p>The WebSocket client implements two sub protocols. One for
+ the actual video frames and the other for control (input and
+ other things like toggling the screen). Video frames are basically
+ just sent down as is in RGBA format. An example (index.html) is
+ provided.</p>
+
+<p>Licensed under the BSD license.</p>
+
+<p>Copyright (c) 2006 James F. <a href="mailto:tyranid@gmail.com">tyranid@gmail.com</a></p>
+
+<p>Copyright (c) 2011 Luqman A. <a href="mailto:laden@csclub.uwaterloo.ca">laden@csclub.uwaterloo.ca</a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">RemoteJoyPlus maintained by <a href="https://github.com/luqmana">luqmana</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
